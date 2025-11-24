@@ -259,7 +259,7 @@ export const getMessageBubbleStyle = (
 ): CSSProperties => ({
   padding: "16px 20px",
   borderRadius: isCurrentUser ? "20px 20px 4px 20px" : "20px 20px 20px 4px",
-  background: isCurrentUser ? "#fefff1" : "#5298c8",
+  background: isCurrentUser ? "#fffff0" : "#5298c8",
   color: isCurrentUser ? "#000000" : "#ffffff",
   wordWrap: "break-word",
   fontSize: "15px",
