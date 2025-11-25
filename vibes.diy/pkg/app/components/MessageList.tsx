@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from "react";
+import React, { memo, useMemo, useRef, useEffect } from "react";
 import Message from "./Message.js";
 import type { ChatMessageDocument, ViewType } from "@vibes.diy/prompts";
 
@@ -19,6 +19,9 @@ function MessageList({
   setMobilePreviewShown,
   navigateToView,
 }: MessageListProps) {
+  // Ref to scroll to the bottom of messages
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   // Create a special message list when there's only one user message
   const shouldShowWaitingIndicator =
     messages.length === 1 && messages[0]?.type === "user";
@@ -122,10 +125,18 @@ function MessageList({
     shouldShowWaitingIndicator,
   ]);
 
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   return (
     <div className="flex-1">
       <div className="mx-auto flex min-h-full max-w-5xl flex-col py-4">
-        <div className="flex flex-col space-y-4">{messageElements}</div>
+        <div className="flex flex-col space-y-4 mb-[82px] lg:mb-[70px]">
+          {messageElements}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
     </div>
   );

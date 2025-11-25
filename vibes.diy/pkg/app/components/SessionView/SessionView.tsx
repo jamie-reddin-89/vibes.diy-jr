@@ -1,32 +1,29 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { encodeTitle } from "./SessionSidebar/utils.js";
-import AppLayout from "./AppLayout.js";
-import ChatHeaderContent from "./ChatHeaderContent.js";
-import ChatInput, { ChatInputRef } from "./ChatInput.js";
-import models from "../data/models.json" with { type: "json" };
-import ChatInterface from "./ChatInterface.js";
-import ResultPreview from "./ResultPreview/ResultPreview.js";
-import ResultPreviewHeaderContent from "./ResultPreview/ResultPreviewHeaderContent.js";
-import SessionSidebar from "./SessionSidebar.js";
-import { useCookieConsent } from "../contexts/CookieConsentContext.js";
-import { useSimpleChat } from "../hooks/useSimpleChat.js";
-import { useViewState } from "../utils/ViewState.js";
+import { encodeTitle } from "../SessionSidebar/utils.js";
+import AppLayout from "../AppLayout.js";
+import ChatHeaderContent from "../ChatHeaderContent.js";
+import models from "../../data/models.json" with { type: "json" };
+import { Button } from "../ui/button.js";
+import ModelPicker from "../ModelPicker.js";
+import ChatInterface from "../ChatInterface.js";
+import ResultPreview from "../ResultPreview/ResultPreview.js";
+import ResultPreviewHeaderContent from "../ResultPreview/ResultPreviewHeaderContent.js";
+import SessionSidebar from "../SessionSidebar.js";
+import { useCookieConsent } from "../../contexts/CookieConsentContext.js";
+import { useSimpleChat } from "../../hooks/useSimpleChat.js";
+import { useViewState } from "../../utils/ViewState.js";
 import { ViewType, ViewControlsType } from "@vibes.diy/prompts";
-import { useAuth } from "../contexts/AuthContext.js";
-import { useAuthPopup } from "../hooks/useAuthPopup.js";
-import { trackAuthClick, trackEvent } from "../utils/analytics.js";
-import { BrutalistCard, useMobile } from "@vibes.diy/use-vibes-base";
-import LoggedOutView from "./LoggedOutView.js";
-
-interface SessionViewProps {
-  sessionId: string;
-  pathname: string;
-  search: string;
-  locationState: unknown;
-  navigate: (to: string, options?: { replace?: boolean }) => void;
-  urlPrompt: string | null;
-  urlModel: string | null;
-}
+import { useAuth } from "../../contexts/AuthContext.js";
+import { useAuthPopup } from "../../hooks/useAuthPopup.js";
+import { trackAuthClick, trackEvent } from "../../utils/analytics.js";
+import { useMobile } from "@vibes.diy/use-vibes-base";
+import LoggedOutView from "../LoggedOutView.js";
+import { SessionViewProps } from "./SessionView.types.js";
+import {
+  getChatContainerStyleOut,
+  getChatContainerStyle,
+  getChatContainerBottomCard,
+} from "./SessionView.styles.js";
 
 export default function SessionView({
   sessionId,
@@ -105,7 +102,7 @@ function AuthenticatedSessionView({
 }: SessionViewProps) {
   const chatState = useSimpleChat(sessionId);
   const hasAutoSentMessage = useRef(false);
-  const chatInputRef = useRef<ChatInputRef>(null);
+  const submitButtonRef = useRef<HTMLButtonElement>(null);
   const isMobile = useMobile();
 
   const { setMessageHasBeenSent } = useCookieConsent();
@@ -166,8 +163,8 @@ function AuthenticatedSessionView({
 
       // Click submit button after 2 seconds
       setTimeout(() => {
-        if (chatInputRef.current) {
-          chatInputRef.current.clickSubmit();
+        if (submitButtonRef.current) {
+          submitButtonRef.current.click();
           // Clear the captured prompt to allow normal navigation behavior
           setCapturedPrompt(null);
         }
@@ -199,12 +196,6 @@ function AuthenticatedSessionView({
 
   const { displayView, navigateToView, viewControls, showViewControls } =
     useViewState(viewStateProps, pathname, navigate);
-
-  // Temporary fallback values for testing
-  // const displayView = "chat";
-  // const navigateToView = () => {};
-  // const viewControls = {};
-  // const showViewControls = false;
 
   // Handle code save from the editor
   const handleCodeSave = useCallback(
@@ -263,6 +254,60 @@ function AuthenticatedSessionView({
     setIsSidebarVisible(false);
   }, []);
 
+  // Inject CSS animations for chat messages (matching HomeScreen)
+  useEffect(() => {
+    const style = document.createElement("style");
+    style.innerHTML = `
+      @keyframes slide-in-left {
+        from {
+          opacity: 0;
+          transform: translateX(-100px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      @keyframes slide-in-right {
+        from {
+          opacity: 0;
+          transform: translateX(100px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .message-current-user, .message-other-user {
+        animation: linear both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 30%;
+      }
+
+      .message-current-user {
+        animation-name: slide-in-right;
+      }
+
+      .message-other-user {
+        animation-name: slide-in-left;
+      }
+
+      .chat-container-wrapper::-webkit-scrollbar {
+        display: none;
+      }
+
+      .chat-inner::-webkit-scrollbar {
+        display: none;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
   // Reset previewReady state when streaming starts
   useEffect(() => {
     if (chatState.isStreaming) {
@@ -278,9 +323,7 @@ function AuthenticatedSessionView({
     if (isMobile) {
       setMobilePreviewShown(true);
     }
-
-    // setActiveView('preview'); // This is now handled by useViewState when previewReady changes
-  }, [isMobile]); // chatState.isStreaming, chatState.codeReady removed as setActiveView is gone and useViewState handles this logic
+  }, [isMobile]);
 
   // URL update effect
   useEffect(() => {
@@ -328,8 +371,6 @@ function AuthenticatedSessionView({
     capturedPrompt,
     urlModel,
   ]);
-
-  // We're now passing chatState directly to ChatInput
 
   // Track if user manually clicked back to chat during streaming
   const [userClickedBack, setUserClickedBack] = useState(false);
@@ -419,13 +460,13 @@ function AuthenticatedSessionView({
               viewControls={viewControls as ViewControlsType}
               showViewControls={!!showViewControls}
               setMobilePreviewShown={setMobilePreviewShown}
-              setUserClickedBack={setUserClickedBack} // Keep this for BackButton logic
+              setUserClickedBack={setUserClickedBack}
               isStreaming={chatState.isStreaming}
               // Props needed by usePublish and useSession within ResultPreviewHeaderContent:
               code={chatState.selectedCode?.content || ""}
-              sessionId={chatState.sessionId} // sessionId is guaranteed non-null from interface
-              title={chatState.title || undefined} // Handle null
-              previewReady={previewReady} // needed for publish button visibility logic
+              sessionId={chatState.sessionId}
+              title={chatState.title || undefined}
+              previewReady={previewReady}
               // Props for code editing
               hasCodeChanges={hasCodeChanges}
               onCodeSave={codeSaveHandler || undefined}
@@ -434,17 +475,26 @@ function AuthenticatedSessionView({
           ) : null
         }
         chatPanel={
-          <ChatInterface
-            {...chatState}
-            setMobilePreviewShown={setMobilePreviewShown}
-            navigateToView={navigateToView as (view: ViewType) => void}
-          />
+          <div
+            className="chat-container-wrapper"
+            style={getChatContainerStyleOut()}
+          >
+            <div className="chat-inner" style={getChatContainerStyle()}>
+              <div style={getChatContainerBottomCard()}>
+                <ChatInterface
+                  {...chatState}
+                  setMobilePreviewShown={setMobilePreviewShown}
+                  navigateToView={navigateToView as (view: ViewType) => void}
+                />
+              </div>
+            </div>
+          </div>
         }
         previewPanel={
           <ResultPreview
             title={chatState.title}
             updateTitle={chatState.updateTitle}
-            sessionId={chatState.sessionId} // sessionId is guaranteed non-null from interface
+            sessionId={chatState.sessionId}
             code={chatState.selectedCode?.content || ""}
             isStreaming={chatState.isStreaming}
             codeReady={chatState.codeReady}
@@ -460,31 +510,77 @@ function AuthenticatedSessionView({
           />
         }
         chatInput={
-          <BrutalistCard size="md" style={{ margin: "0 1rem 1rem 1rem" }}>
-            <ChatInput
-              ref={chatInputRef}
-              chatState={chatState}
-              showModelPickerInChat={chatState.showModelPickerInChat}
-              currentModel={effectiveModel}
-              onModelChange={async (modelId: string) => {
-                if (chatState.updateSelectedModel) {
-                  await chatState.updateSelectedModel(modelId);
-                }
-              }}
-              models={
-                models as {
-                  id: string;
-                  name: string;
-                  description: string;
-                  featured?: boolean;
-                }[]
-              }
-              globalModel={chatState.globalModel}
-              onSend={() => {
-                setMessageHasBeenSent(true);
-              }}
-            />
-          </BrutalistCard>
+          <div style={{ margin: "0 1rem 1rem 1rem" }}>
+            <div className="px-2 py-1">
+              <div className="space-y-1">
+                <textarea
+                  ref={chatState.inputRef}
+                  value={chatState.input}
+                  onChange={(e) => {
+                    if (chatState.setInput) {
+                      chatState.setInput(e.target.value);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey && !chatState.isStreaming) {
+                      e.preventDefault();
+                      if (chatState.sendMessage && !chatState.isStreaming) {
+                        chatState.sendMessage(chatState.input);
+                        setMessageHasBeenSent(true);
+                      }
+                    }
+                  }}
+                  className="shadow-[inset_3px_3px_0px_0px] border-light-decorative-00 dark:border-dark-decorative-00 text-light-primary dark:text-dark-primary bg-light-background-01 dark:bg-dark-background-01 max-h-[200px] min-h-[90px] w-full resize-y rounded-lg border p-2.5 text-sm outline-none"
+                  placeholder={
+                    chatState.docs.length || chatState.isStreaming
+                      ? "Continue coding..."
+                      : "I want to build..."
+                  }
+                  rows={2}
+                />
+                <div className="flex items-center justify-between gap-2">
+                  {chatState.showModelPickerInChat ? (
+                    <ModelPicker
+                      currentModel={effectiveModel}
+                      onModelChange={async (modelId: string) => {
+                        if (chatState.updateSelectedModel) {
+                          await chatState.updateSelectedModel(modelId);
+                        }
+                      }}
+                      models={
+                        models as {
+                          id: string;
+                          name: string;
+                          description: string;
+                          featured?: boolean;
+                        }[]
+                      }
+                      globalModel={chatState.globalModel}
+                      compact={false}
+                    />
+                  ) : (
+                    <span aria-hidden="true" />
+                  )}
+                  <Button
+                    ref={submitButtonRef}
+                    type="button"
+                    onClick={() => {
+                      if (chatState.sendMessage && !chatState.isStreaming) {
+                        chatState.sendMessage(chatState.input);
+                        setMessageHasBeenSent(true);
+                      }
+                    }}
+                    disabled={chatState.isStreaming}
+                    variant="blue"
+                    size="fixed"
+                    aria-label={chatState.isStreaming ? "Generating" : "Send message"}
+                  >
+                    {chatState.isStreaming ? "•••" : "Code"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
         }
         suggestionsComponent={undefined}
         mobilePreviewShown={displayView === "chat" ? false : mobilePreviewShown}
@@ -492,7 +588,7 @@ function AuthenticatedSessionView({
       <SessionSidebar
         isVisible={isSidebarVisible}
         onClose={closeSidebar}
-        sessionId={chatState.sessionId} // sessionId is guaranteed non-null from interface
+        sessionId={chatState.sessionId}
       />
     </>
   );

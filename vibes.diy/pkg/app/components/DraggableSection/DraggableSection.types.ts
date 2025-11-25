@@ -6,4 +6,5 @@ export interface DraggableSectionProps {
   x?: number;
   y?: number;
   static?: boolean; // When true, behaves like a normal div (not draggable, no position)
+  removePaddingTop?: boolean;
 }

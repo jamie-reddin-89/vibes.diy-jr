@@ -9,6 +9,11 @@ import type {
 } from "@vibes.diy/prompts";
 import { parseContent } from "@vibes.diy/prompts";
 import { BrutalistCard } from "@vibes.diy/use-vibes-base";
+import {
+  getMessageWrapperStyle,
+  getUsernameStyle,
+  getMessageBubbleStyle,
+} from "./SessionView/SessionView.styles.js";
 
 interface MessageProps {
   message: ChatMessageDocument;
@@ -42,48 +47,27 @@ const AIMessage = memo(
     isLatestMessage?: boolean;
   }) => {
     const { segments } = parseContent(message.text);
+    const isCurrentUser = false;
     return (
-      <div className="mb-4 flex flex-row justify-start px-4">
-        <div className="mr-2 flex-shrink-0">
-          <div
-            className="bg-light-decorative-02 dark:bg-dark-decorative-02 flex h-8 w-8 items-center justify-center rounded-full shadow-sm"
-            title={model || undefined}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"
-              />
-            </svg>
+      <div
+        className="message-other-user"
+        style={getMessageWrapperStyle(isCurrentUser)}
+      >
+        <div style={{ width: "100%" }}>
+          <div style={getUsernameStyle(isCurrentUser)}>AI</div>
+          <div style={getMessageBubbleStyle(isCurrentUser)}>
+            <StructuredMessage
+              segments={segments || []}
+              isStreaming={isStreaming}
+              messageId={message._id}
+              setSelectedResponseId={setSelectedResponseId}
+              selectedResponseId={selectedResponseId}
+              setMobilePreviewShown={setMobilePreviewShown}
+              rawText={message.text}
+              navigateToView={navigateToView}
+              isLatestMessage={isLatestMessage}
+            />
           </div>
-        </div>
-        <div className="max-w-[85%]">
-          <StructuredMessage
-            segments={segments || []}
-            isStreaming={isStreaming}
-            messageId={message._id}
-            setSelectedResponseId={setSelectedResponseId}
-            selectedResponseId={selectedResponseId}
-            setMobilePreviewShown={setMobilePreviewShown}
-            rawText={message.text}
-            navigateToView={navigateToView}
-            isLatestMessage={isLatestMessage}
-          />
         </div>
       </div>
     );
@@ -108,13 +92,34 @@ const AIMessage = memo(
 );
 
 const UserMessage = memo(({ message }: { message: ChatMessageDocument }) => {
+  const isCurrentUser = true;
   return (
-    <div className="mb-4 flex flex-row justify-end px-4">
-      <BrutalistCard size="md" messageType="user" className="max-w-[85%]">
-        <div className="prose prose-sm dark:prose-invert prose-ul:pl-5 prose-ul:list-disc prose-ol:pl-5 prose-ol:list-decimal prose-li:my-0 max-w-none">
-          <ReactMarkdown>{message.text}</ReactMarkdown>
+    <div
+      className="message-current-user"
+      style={getMessageWrapperStyle(isCurrentUser)}
+    >
+      <div style={{ width: "100%" }}>
+        <div style={getUsernameStyle(isCurrentUser)}>You</div>
+        <div style={getMessageBubbleStyle(isCurrentUser)}>
+          <ReactMarkdown
+            components={{
+              p: ({ children }) => <span>{children}</span>,
+              a: ({ children, href }) => (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: "underline" }}
+                >
+                  {children}
+                </a>
+              ),
+            }}
+          >
+            {message.text}
+          </ReactMarkdown>
         </div>
-      </BrutalistCard>
+      </div>
     </div>
   );
 });
@@ -164,7 +169,7 @@ const Message = memo(
     isLatestMessage,
   }: MessageProps) => {
     return (
-      <div className="transition-all duration-150 ease-in hover:opacity-95">
+      <>
         {message.type === "ai" ? (
           <AIMessage
             message={message as AiChatMessageDocument}
@@ -181,7 +186,7 @@ const Message = memo(
         ) : (
           <UserMessage message={message} />
         )}
-      </div>
+      </>
     );
   },
   (prevProps, nextProps) => {

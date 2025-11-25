@@ -9,20 +9,14 @@ import { useNavigate, useParams, useLocation } from "react-router";
 import { BrutalistCard, VibesButton } from "@vibes.diy/use-vibes-base";
 import { quickSuggestions } from "../../data/quick-suggestions-data.js";
 import { parseContent } from "@vibes.diy/prompts";
-import { useFireproof } from "use-fireproof";
 import ReactMarkdown from "react-markdown";
 import { useSimpleChat } from "../../hooks/useSimpleChat.js";
 import { useAuth } from "../../contexts/AuthContext.js";
 import { useAuthPopup } from "../../hooks/useAuthPopup.js";
 import { NeedsLoginModal } from "../../components/NeedsLoginModal.js";
-import { encodeTitle } from "../../components/SessionSidebar/utils.js";
-import { trackEvent } from "../../utils/analytics.js";
-
-interface CreateSessionDoc {
-  type: "create-session";
-  prompt: string;
-  created_at: number;
-}
+import { useNewSessionChat } from "../../hooks/useNewSessionChat.js";
+import ChatInput from "../../components/ChatInput.js";
+import models from "../../data/models.json" with { type: "json" };
 
 // Separate component for the streaming view to avoid conditional hooks
 function CreateWithStreaming({
@@ -256,7 +250,6 @@ export const CreateSection = () => {
   const params = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { database } = useFireproof("create-sessions");
   const { isAuthenticated } = useAuth();
   const { initiateLogin } = useAuthPopup();
   const autoSubmitExecuted = useRef(false);
@@ -269,48 +262,29 @@ export const CreateSection = () => {
     | { shouldGenerate?: boolean; prompt?: string }
     | undefined;
 
-  const [promptText, setPromptText] = useState(locationState?.prompt || "");
   const [pendingSubmit, setPendingSubmit] = useState(false);
   const [shouldGenerate, setShouldGenerate] = useState(
     locationState?.shouldGenerate || false,
   );
+
+  // Use chat state for the input UI (only when no session exists yet)
+  const chatState = useNewSessionChat(() => {
+    // This callback is called after session creation in useNewSessionChat
+    // We don't need to do anything here as the hook handles navigation
+  });
+
+  // Initialize input from location state if available
+  useEffect(() => {
+    if (locationState?.prompt && chatState.setInput) {
+      chatState.setInput(locationState.prompt);
+    }
+  }, [locationState?.prompt, chatState.setInput]);
 
   // Randomly select 3 suggestions from quickSuggestions
   const randomSuggestions = useMemo(() => {
     const shuffled = [...quickSuggestions].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, 3);
   }, []);
-
-  const createAndNavigateToSession = useCallback(
-    async (prompt: string) => {
-      try {
-        const sessionDoc: CreateSessionDoc = {
-          type: "create-session",
-          prompt: prompt.trim(),
-          created_at: Date.now(),
-        };
-
-        const result = await database.put(sessionDoc);
-        const newSessionId = result.id;
-
-        // Generate a title slug from the prompt (first 50 chars)
-        const promptTitle = prompt.trim().slice(0, 50);
-        const encodedPromptTitle = encodeTitle(promptTitle);
-
-        // Navigate to the chat route with sessionId and encoded title
-        navigate(
-          `/chat/${newSessionId}/${encodedPromptTitle}?prompt=${encodeURIComponent(prompt.trim())}`,
-          {
-            state: { shouldGenerate: true, prompt: prompt.trim() },
-          },
-        );
-      } catch (error) {
-        setPendingSubmit(false);
-        throw error;
-      }
-    },
-    [database, navigate],
-  );
 
   const handleNavigateToPreview = useCallback(
     (code: string) => {
@@ -329,16 +303,27 @@ export const CreateSection = () => {
       autoSubmitExecuted.current = true;
       setPendingSubmit(false);
 
-      if (promptText.trim()) {
+      if (chatState.input.trim() && chatState.sendMessage) {
         setShouldGenerate(true);
-        createAndNavigateToSession(promptText.trim()).catch((error) => {
-          console.error("Auto-submit failed:", error);
-          autoSubmitExecuted.current = false;
-          setShouldGenerate(false);
-        });
+        chatState
+          .sendMessage(chatState.input)
+          .then(() => {
+            // Session created and navigation handled by hook
+          })
+          .catch((error) => {
+            console.error("Auto-submit failed:", error);
+            autoSubmitExecuted.current = false;
+            setShouldGenerate(false);
+          });
       }
     }
-  }, [pendingSubmit, isAuthenticated, promptText, createAndNavigateToSession]);
+  }, [
+    pendingSubmit,
+    isAuthenticated,
+    chatState.input,
+    chatState.sendMessage,
+    setShouldGenerate,
+  ]);
 
   const handleLetsGo = async () => {
     if (!isAuthenticated) {
@@ -347,29 +332,11 @@ export const CreateSection = () => {
       return;
     }
 
-    if (promptText.trim()) {
+    if (chatState.input.trim() && chatState.sendMessage) {
       setShouldGenerate(true);
-
       try {
-        // Create new session ID (same pattern as useNewSessionChat)
-        const newSessionId = `session-${Date.now()}`;
-
-        // Build URL with prompt parameter
-        const urlParams = new URLSearchParams();
-        urlParams.set("prompt", promptText.trim());
-
-        const targetUrl = `/chat/${newSessionId}?${urlParams.toString()}`;
-
-        // Track session creation before navigation
-        trackEvent("new_session_created", {
-          source: "home_page_create_section",
-        });
-
-        // Use hard navigation like the original "code" button
-        // Delay slightly to allow analytics event to flush
-        setTimeout(() => {
-          window.location.href = targetUrl;
-        }, 20);
+        // Use chatState.sendMessage which handles session creation and navigation
+        await chatState.sendMessage(chatState.input);
       } catch (error) {
         setShouldGenerate(false);
       }
@@ -400,21 +367,21 @@ export const CreateSection = () => {
                 <VibesButton
                   variant="blue"
                   style={{ flex: "1" }}
-                  onClick={() => setPromptText(randomSuggestions[0].text)}
+                  onClick={() => chatState.setInput(randomSuggestions[0].text)}
                 >
                   {randomSuggestions[0].label}
                 </VibesButton>
                 <VibesButton
                   variant="yellow"
                   style={{ flex: "1" }}
-                  onClick={() => setPromptText(randomSuggestions[1].text)}
+                  onClick={() => chatState.setInput(randomSuggestions[1].text)}
                 >
                   {randomSuggestions[1].label}
                 </VibesButton>
                 <VibesButton
                   variant="gray"
                   style={{ flex: "1" }}
-                  onClick={() => setPromptText(randomSuggestions[2].text)}
+                  onClick={() => chatState.setInput(randomSuggestions[2].text)}
                 >
                   {randomSuggestions[2].label}
                 </VibesButton>
@@ -424,22 +391,27 @@ export const CreateSection = () => {
                 <div style={{ marginBottom: "12px", fontWeight: 600 }}>
                   Describe your vibe
                 </div>
-                <textarea
-                  value={promptText}
-                  onChange={(e) => setPromptText(e.target.value)}
-                  placeholder="What do you want to build..."
-                  rows={6}
-                  style={{
-                    width: "100%",
-                    border: "none",
-                    background: "transparent",
-                    color: "inherit",
-                    fontSize: "inherit",
-                    fontWeight: "inherit",
-                    letterSpacing: "inherit",
-                    padding: "4px",
-                    resize: "vertical",
-                    fontFamily: "inherit",
+                <ChatInput
+                  chatState={chatState}
+                  showModelPickerInChat={chatState.showModelPickerInChat}
+                  currentModel={chatState.effectiveModel}
+                  onModelChange={async (modelId: string) => {
+                    if (chatState.updateSelectedModel) {
+                      await chatState.updateSelectedModel(modelId);
+                    }
+                  }}
+                  models={
+                    models as {
+                      id: string;
+                      name: string;
+                      description: string;
+                      featured?: boolean;
+                    }[]
+                  }
+                  globalModel={chatState.globalModel}
+                  hideSubmitButton={true}
+                  onSend={() => {
+                    // Session creation is handled in chatState.sendMessage
                   }}
                 />
               </BrutalistCard>
@@ -456,14 +428,14 @@ export const CreateSection = () => {
           )}
 
           {/* Show first user message when session exists */}
-          {sessionId && promptText && (
+          {sessionId && chatState.input && (
             <BrutalistCard size="md" style={{ width: "100%" }}>
               <div
                 style={{ marginBottom: "8px", fontWeight: 600, opacity: 0.7 }}
               >
                 Your request:
               </div>
-              <div>{promptText}</div>
+              <div>{chatState.input}</div>
             </BrutalistCard>
           )}
 
@@ -471,7 +443,7 @@ export const CreateSection = () => {
           {sessionId && shouldGenerate && (
             <CreateWithStreaming
               sessionId={sessionId}
-              promptText={promptText}
+              promptText={chatState.input}
               onNavigateToPreview={handleNavigateToPreview}
               shouldGenerate={shouldGenerate}
               showInputAtBottom={true}

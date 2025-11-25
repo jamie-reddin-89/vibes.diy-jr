@@ -1,6 +1,7 @@
 import React from "react";
 import type { ReactNode } from "react";
 import { Toaster } from "react-hot-toast";
+import { SessionViewTheme } from "./SessionView/SessionView.styles.ts";
 
 interface AppLayoutProps {
   chatPanel: ReactNode;
@@ -53,6 +54,7 @@ export default function AppLayout({
 
         <div
           className={`w-full ${fullWidthChat ? "md:flex md:justify-center md:pb-[20vh]" : "pb-0"} transition-all duration-300 ease-in-out`}
+          style={{ backgroundColor: SessionViewTheme.colors.chatBackground }}
         >
           <div
             className={`${fullWidthChat ? "md:w-4/5" : "w-full"} transition-all duration-300 ease-in-out`}

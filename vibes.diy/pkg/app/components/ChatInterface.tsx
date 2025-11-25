@@ -49,7 +49,7 @@ function ChatInterface({
       {messages.length > 0 ? (
         <div
           ref={messagesContainerRef}
-          className="flex flex-grow flex-col-reverse overflow-y-auto"
+          className="flex flex-grow flex-col-reverse"
         >
           {memoizedMessageList}
         </div>

@@ -16,19 +16,20 @@ const _titleBorderColorLiteral: Record<CardColor, string> = {
 };
 
 export const getTitleBarStyle = (color: CardColor): React.CSSProperties => ({
-  height: "20px",
+  height: "27px",
   width: "100%",
   backgroundColor: titleColorLiteral[color],
   border: "1px solid black",
   marginBottom: "1px",
+  boxShadow: '#ffffff61 0px 0px 0px 1px',
 });
 
-export const getCardChildrenStyle = (): React.CSSProperties => ({
-  padding: "16px",
+export const getCardChildrenStyle = (removePaddingTop: boolean): React.CSSProperties => ({
   backgroundColor: "#FFFFF0",
   color: "#221f20",
   border: `1px solid black`,
   boxShadow: "0 0 0 1px white",
+  padding: removePaddingTop ? '0px 16px 16px 16px' : '16px',
 });
 
 export const getCardBasicStyle = (): React.CSSProperties => ({

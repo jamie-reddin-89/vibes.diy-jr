@@ -59,9 +59,9 @@ export function useSceneSetup(
     rendererRef.current = renderer;
 
     // Ensure canvas is properly styled for centering
-    renderer.domElement.style.display = 'block';
-    renderer.domElement.style.width = '100%';
-    renderer.domElement.style.height = '100%';
+    renderer.domElement.style.display = "block";
+    renderer.domElement.style.width = "100%";
+    renderer.domElement.style.height = "100%";
 
     mountRef.current.appendChild(renderer.domElement);
 

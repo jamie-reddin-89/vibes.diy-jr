@@ -13,6 +13,7 @@ export const DraggableSection = ({
   x = 0,
   y = 0,
   static: isStatic = false,
+  removePaddingTop = false,
 }: DraggableSectionProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -31,6 +32,21 @@ export const DraggableSection = ({
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (isMobile || isStatic) return; // Disable dragging for static sections
+
+    // Don't prevent default or start dragging if clicking on interactive elements
+    const target = e.target as HTMLElement;
+    const isInteractive =
+      target.tagName === "INPUT" ||
+      target.tagName === "TEXTAREA" ||
+      target.tagName === "BUTTON" ||
+      target.tagName === "A" ||
+      target.tagName === "SELECT" ||
+      target.closest("input, textarea, button, a, select");
+
+    if (isInteractive) {
+      return; // Allow normal interaction with form elements
+    }
+
     e.preventDefault();
     setIsDragging(true);
     const rect = cardRef.current?.getBoundingClientRect();
@@ -78,7 +94,7 @@ export const DraggableSection = ({
       onMouseDown={isMobile || isStatic ? undefined : handleMouseDown}
     >
       <div style={getTitleBarStyle(color)} />
-      <div style={getCardChildrenStyle()}>{children}</div>
+      <div style={getCardChildrenStyle(removePaddingTop)}>{children}</div>
     </div>
   );
 };

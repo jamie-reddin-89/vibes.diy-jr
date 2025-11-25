@@ -46,7 +46,7 @@ export const getTitleBarStyle = (color: CardColor): React.CSSProperties => ({
 export const getCardChildrenStyle = (
   color: CardColor,
 ): React.CSSProperties => ({
-  padding: "16px",
+  padding: "16px 8px",
   backgroundColor: childrensColorBackgroundLiteral[color],
   color: childrensColorLiteral[color],
 });

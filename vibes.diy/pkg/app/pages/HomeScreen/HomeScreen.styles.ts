@@ -2,7 +2,7 @@ import { CSSProperties } from "react";
 
 export const HomeScreenTheme = {
   colors: {
-    menuBg: "var(--hm-menu-bg, #d4d4d4)",
+    menuBg: "var(--hm-menu-bg, #CCCDC8)",
     menuText: "var(--hm-menu-text, white)",
     contentBg: "var(--hm-content-bg, #1e1e1e)",
     shadow: "var(--hm-shadow, rgba(0, 0, 0, 0.3))",
@@ -295,7 +295,7 @@ export const getChatContainerStyleOut = (): CSSProperties => ({
 });
 
 export const getChatContainerTopBar = (): CSSProperties => ({
-  height: "20px",
+  height: "27px",
   width: "100%",
   backgroundColor: "#40799d",
   border: "1px solid black",
