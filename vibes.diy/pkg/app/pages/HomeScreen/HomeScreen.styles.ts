@@ -6,7 +6,7 @@ export const HomeScreenTheme = {
     menuText: "var(--hm-menu-text, white)",
     contentBg: "var(--hm-content-bg, #1e1e1e)",
     shadow: "var(--hm-shadow, rgba(0, 0, 0, 0.3))",
-    gridLineColor: "var(--hm-grid-line, rgba(255, 255, 255, 0.5))",
+    gridLineColor: "var(--hm-grid-line, #fffff0)",
   },
   dimensions: {
     padding: "20px",
