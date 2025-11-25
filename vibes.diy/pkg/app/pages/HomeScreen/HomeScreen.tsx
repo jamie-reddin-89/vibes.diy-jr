@@ -561,7 +561,7 @@ export const HomeScreen = (_props: HomeScreenProps) => {
                 Impress the Group Chat
               </h2>
               <p style={{ fontWeight: "bold" }}>
-                Instantly make your own apps on the fly
+                Vibe coding made so easy, you don't need a business model
               </p>
             </DraggableSection>
 
@@ -589,14 +589,9 @@ export const HomeScreen = (_props: HomeScreenProps) => {
 
             <DraggableCard color="blue" x={550} y={100}>
               <p style={{ maxWidth: "250px", fontWeight: "bold" }}>
-                No coding experience required. Just build what you need, when
-                you need it, and share it instantly with the group chat.
-              </p>
-            </DraggableCard>
-            <DraggableCard color="blue" x={550} y={100}>
-              <p style={{ maxWidth: "250px", fontWeight: "bold" }}>
-                No coding experience required. Just build what you need, when
-                you need it, and share it instantly with the group chat.
+                No coding experience required. Just type an idea, and invite your friends. Our <a href="http://fireproof.storage/">purpose-built vibe coding database</a> 
+                automatically encrypts all your data. Which means the group chat's lore 
+                stays local, portable, and safe.
               </p>
             </DraggableCard>
 
@@ -731,8 +726,26 @@ export const HomeScreen = (_props: HomeScreenProps) => {
                 justifyContent: "center",
               }}
               ref={section2Ref}
-            >
+            >       
               <DraggableSection color="red" static>
+                <h3
+                  style={{
+                    fontWeight: "bold",
+                    fontSize: "40px",
+                    color: "#5398c9",
+                  }}
+                >
+                  You're about to make an app
+                </h3>
+                <p>
+                  <strong>The front-end is the fun part</strong>
+                  <br />
+                  Let's start there. Let's say you want to make a simple counter 
+                  that keeps track of the number of times a group of people click 
+                  a red button.
+                  <br /><br />
+                  Most AI models will give you something cool right away.
+                </p>
                 <div
                   style={{
                     width: "100%",
@@ -740,8 +753,10 @@ export const HomeScreen = (_props: HomeScreenProps) => {
                     position: "relative",
                   }}
                 >
+                  
                   <AnimatedScene progress={0} />
                 </div>
+                
               </DraggableSection>
             </section>
 
@@ -761,54 +776,47 @@ export const HomeScreen = (_props: HomeScreenProps) => {
                     color: "#5398c9",
                   }}
                 >
-                  Get off the Cloud
+                  Now comes the hard part
                 </h3>
                 <p>
-                  <strong>With un-hackable architecture</strong>
+                  <strong>Multiplayer features need a backend</strong>
                   <br />
-                  Vibes gives you complete visibility and control over your
-                  data. Your community apps are stored locally, right on your
-                  phone — so you don't have to worry about trusting everyone's
-                  personal information to some impersonal cloud.
-                </p>
-
-                <h3
+                  And backends are hard. You're a vibe coder, not a "DevOps" expert. 
+                  Messing this part up is how vibe coded apps get hacked. You can either 
+                  try to connect to something like Supabase, which is complicated and expensive.
+                  Or let someone build you a backend that you'll be stuck with forever.
+                  <br /><br />
+                  <strong>Here's the problem</strong>
+                  <br />
+                  You're trying to vibe code using a web stack that was made for a different problem: 
+                  building a huge startup with giant teams of <i>actual</i> programmers using millions
+                  in venture capital.
+                  <br /><br />
+                  <strong>Your web stack wasn't made for vibe coding</strong>
+                  <br />
+                  Most web stacks are built for mass-market software: big schemas, strict permissions, 
+                  endless backend plumbing. Tools like Supabase and row-level auth policies work fine 
+                  for enterprise apps — but they slow down small, personal, shareable ones.
+                  <br /><br />
+                  Vibes DIY takes a different approach. It treats data as part of your creative surface, 
+                  not a distant backend. None of this would be possible if you still needed a backend to sync 
+                  data between users. But, doesn't everybody need a backend for multiplayer data? 
+                  <br /><br />
+                                  <h3
                   style={{
                     fontWeight: "bold",
                     fontSize: "40px",
                     color: "#5398c9",
                   }}
                 >
-                  Single-Serving Software
+                  We made a database designed for vibe coding
                 </h3>
-                <p>
-                  <strong>Don't overthink it — make it.</strong>
+                  <strong>Fireproof makes the web server into a horseless carriage</strong>
                   <br />
-                  No need to be precious. Whip up a one-time scoring app for
-                  your annual pumpkin carving contest. Generate questions for
-                  trivia night. Troll your friends with a custom meme template.
-                  Solve small problems or big ones. Make new things and put them
-                  into motion right away. As long as you can describe it, you
-                  can build it — fast.
-                </p>
-
-                <h3
-                  style={{
-                    fontWeight: "bold",
-                    fontSize: "40px",
-                    color: "#5398c9",
-                  }}
-                >
-                  Quick Apps for Lasting Community
-                </h3>
-                <p>
-                  <strong>Because good software makes good neighbors</strong>
-                  <br />
-                  Your relationships are always evolving. Your tools should too.
-                  With Vibes, build exactly what your community needs right now.
-                  When those tools don't serve you anymore, make some new ones.
-                  Because it's not about the apps. It's about what you do with
-                  them together.
+                  Vibes DIY runs on Fireproof, an open source embedded database that syncs without a web server. 
+                  It treats data as part of your creative surface, not a corporate cloud service. Fireproof uses 
+                  distributed data structures, CRDTs, content-addressed storage, and document-style records
+                  to give every app its own lightweight ledger.                  
                 </p>
               </DraggableSection>
             </section>
@@ -824,8 +832,31 @@ export const HomeScreen = (_props: HomeScreenProps) => {
               }}
               ref={section4Ref}
             >
+              
               {/* DraggableSection card for visual reference */}
               <DraggableSection color="blue" static>
+                               <h3
+                  style={{
+                    fontWeight: "bold",
+                    fontSize: "40px",
+                    color: "#5398c9",
+                  }}
+                >
+                  Back to your counter app...
+                </h3> 
+                <p>
+                  <strong>Now you're using Fireproof + Vibes DIY</strong>
+                  <br />
+                  Your data lives locally inside your component, syncing when 
+                  and where you choose. Conflicts resolve sensibly. State just... 
+                  persists.
+                  <br /><br />
+                  You can build offline, share instantly, and grow 
+                  without rewriting your stack. Even if you have no idea what 
+                  any of that means and just want to spell out an idea and get an
+                   app. We got you.
+                  <br /><br />
+                </p>
                 <div
                   style={{
                     width: "100%",

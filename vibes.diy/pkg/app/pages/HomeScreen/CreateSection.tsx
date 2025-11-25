@@ -384,7 +384,7 @@ export const CreateSection = ({
           }}
         >
           <BrutalistCard size="lg" ignoreDarkMode={ignoreDarkMode}>
-            <h1 className="text-4xl font-bold">Vibes are for sharing</h1>
+            <h1 className="text-4xl font-bold">Try a vibe. You'll like it.</h1>
           </BrutalistCard>
 
           {/* Show suggestion buttons and textarea only when no session exists */}
