@@ -353,8 +353,8 @@ export const getSection1BackgroundStyle = (
       linear-gradient(
         180deg,
         transparent 0%,
-        oklch(65% 0.17 220) 30%,
-        oklch(65% 0.17 220) 100%
+        oklch(0.6439 0.1304 231.41) 30%,
+        oklch(0.6439 0.1304 231.41) 100%
       )
     `,
   };
@@ -381,8 +381,8 @@ export const getSection2BackgroundStyle = (
     background: `
       linear-gradient(
         180deg,
-        oklch(65% 0.17 220) 0%,
-        oklch(65% 0.17 220) 70%,
+        oklch(0.6439 0.1304 231.41) 0%,
+        oklch(0.6439 0.1304 231.41) 70%,
         oklch(77.75% 0.195 157.5) 100%
       )
     `,

@@ -5,7 +5,7 @@ const titleColorLiteral: Record<CardColor, string> = {
   yellow: "#c3b03b9b",
   red: "#9b30209b",
   blue: "#40799d9b",
-  grey: "#61625f9b",
+  grey: "#00000066",
 };
 
 const _titleBorderColorLiteral: Record<CardColor, string> = {
