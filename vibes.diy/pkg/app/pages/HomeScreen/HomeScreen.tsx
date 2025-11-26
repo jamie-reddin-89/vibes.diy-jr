@@ -26,7 +26,6 @@ import {
   getSection4BackgroundStyle,
   getSection5BackgroundStyle,
   getSection6BackgroundStyle,
-  getSection7BackgroundStyle,
   getSection8BackgroundStyle,
 } from "./HomeScreen.styles.js";
 import {
@@ -86,7 +85,6 @@ export const HomeScreen = (_props: HomeScreenProps) => {
   const section4Ref = useRef<HTMLDivElement>(null);
   const section5Ref = useRef<HTMLDivElement>(null);
   const section6Ref = useRef<HTMLDivElement>(null);
-  const section7Ref = useRef<HTMLDivElement>(null);
   const section8Ref = useRef<HTMLDivElement>(null);
   const sectionsContainerRef = useRef<HTMLDivElement>(null);
 
@@ -260,7 +258,6 @@ export const HomeScreen = (_props: HomeScreenProps) => {
       section4Ref.current &&
       section5Ref.current &&
       section6Ref.current &&
-      section7Ref.current &&
       section8Ref.current &&
       sectionsContainerRef.current
     ) {
@@ -592,14 +589,6 @@ export const HomeScreen = (_props: HomeScreenProps) => {
                 )}
               />
               <div
-                key={`bg7-${recalcCounter}`}
-                style={getSection7BackgroundStyle(
-                  section7Ref,
-                  sectionsContainerRef,
-                  isMobile,
-                )}
-              />
-              <div
                 key={`bg8-${recalcCounter}`}
                 style={getSection8BackgroundStyle(
                   section8Ref,
@@ -787,7 +776,7 @@ export const HomeScreen = (_props: HomeScreenProps) => {
               }}
               ref={section2Ref}
             >       
-              <DraggableSection color="red" static>
+              <DraggableSection color="blue" static>
                 <h3
                   style={{
                     fontWeight: "bold",
@@ -828,12 +817,12 @@ export const HomeScreen = (_props: HomeScreenProps) => {
               }}
               ref={section3Ref}
             >
-              <DraggableSection color="blue" static>
+              <DraggableSection color="yellow" static>
                 <h3
                   style={{
                     fontWeight: "bold",
                     fontSize: "40px",
-                    color: "#5398c9",
+                    color: "#FEDD00",
                   }}
                 >
                   Now comes the hard part
@@ -866,7 +855,7 @@ export const HomeScreen = (_props: HomeScreenProps) => {
                   style={{
                     fontWeight: "bold",
                     fontSize: "40px",
-                    color: "#5398c9",
+                    color: "#FEDD00",
                   }}
                 >
                   We made a database designed for vibe coding
@@ -894,12 +883,12 @@ export const HomeScreen = (_props: HomeScreenProps) => {
             >
               
               {/* DraggableSection card for visual reference */}
-              <DraggableSection color="blue" static>
+              <DraggableSection color="yellow" static>
                                <h3
                   style={{
                     fontWeight: "bold",
                     fontSize: "40px",
-                    color: "#5398c9",
+                    color: "#FEDD00",
                   }}
                 >
                   Back to your counter app...
@@ -967,7 +956,7 @@ export const HomeScreen = (_props: HomeScreenProps) => {
               }}
               ref={section5Ref}
             >
-              <DraggableSection color="yellow" static>
+              <DraggableSection color="red" static>
                 <div style={getSecondCardStyle()}>
                   <p>You love your group chat. Meet your group app. </p>
                   <p>
@@ -1053,32 +1042,6 @@ export const HomeScreen = (_props: HomeScreenProps) => {
               </div>
             </section>
 
-            {/* Section 7: Dark section */}
-            <section
-              style={{
-                ...getSectionWrapperStyle(isMobile),
-                paddingTop: isMobile ? "0px" : "500px",
-              }}
-              ref={section7Ref}
-            >
-              <DraggableSection color="red" static>
-                <h3
-                  style={{
-                    fontWeight: "bold",
-                    fontSize: "40px",
-                    color: "#000000",
-                  }}
-                >
-                  Section 7
-                </h3>
-                <p style={{ color: "#000000" }}>
-                  <strong>Content for dark section</strong>
-                  <br />
-                  This is the dark section with color oklch(23.4% 0.013 20).
-                </p>
-              </DraggableSection>
-            </section>
-
             {/* Section 8: Light section */}
             <section
               style={{
@@ -1087,7 +1050,7 @@ export const HomeScreen = (_props: HomeScreenProps) => {
               }}
               ref={section8Ref}
             >
-              <DraggableSection color="blue" static>
+              <DraggableSection color="grey" static>
                 <h3
                   style={{
                     fontWeight: "bold",

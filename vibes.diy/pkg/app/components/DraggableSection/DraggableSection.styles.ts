@@ -2,21 +2,14 @@ import React from "react";
 import { CardColor } from "./DraggableSection.types.js";
 
 const titleColorLiteral: Record<CardColor, string> = {
-  yellow: "#c3b03b9b",
-  red: "#9b30209b",
-  blue: "#40799d9b",
+  yellow: "#fe9a004d",
+  red: "#960101a8",
+  blue: "#1f0f9866",
   grey: "#00000066",
 };
 
-const _titleBorderColorLiteral: Record<CardColor, string> = {
-  yellow: "#d6a038",
-  red: "#c23d2b",
-  blue: "#254581",
-  grey: "#000000",
-};
-
 export const getTitleBarStyle = (color: CardColor): React.CSSProperties => ({
-  height: "27px",
+  height: "30px",
   width: "100%",
   backgroundColor: titleColorLiteral[color],
   border: "1px solid black",
