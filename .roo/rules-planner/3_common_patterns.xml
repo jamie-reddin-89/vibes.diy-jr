@@ -1,0 +1,315 @@
+<common_patterns>
+  <document_templates>
+    <template name="requirements_document">
+      <structure>
+        <section name="introduction">
+          <purpose>Summarize the feature and its business value</purpose>
+          <content>
+            <item>Clear problem statement</item>
+            <item>Business value and benefits</item>
+            <item>High-level scope and constraints</item>
+            <item>Success criteria</item>
+          </content>
+        </section>
+
+        <section name="requirements">
+          <purpose>Detail functional requirements using structured format</purpose>
+          <format>
+            <user_story_format>As a [role], I want [feature], so that [benefit]</user_story_format>
+            <acceptance_criteria_format>
+              <criterion>WHEN [event] THEN [system] SHALL [response]</criterion>
+              <criterion>IF [precondition] THEN [system] SHALL [response]</criterion>
+              <criterion>WHEN [event] AND [condition] THEN [system] SHALL [response]</criterion>
+            </acceptance_criteria_format>
+          </format>
+        </section>
+      </structure>
+
+      <example><![CDATA[
+# Requirements Document
+
+## Introduction
+
+The user authentication feature will allow registered users to securely access the application using their email and password. This addresses the need for personalized experiences and data security in multi-user applications.
+
+## Requirements
+
+### Requirement 1
+
+**User Story:** As a registered user, I want to login with my email and password, so that I can access my personal account and data.
+
+#### Acceptance Criteria
+
+1. WHEN user enters valid email and password THEN system SHALL authenticate user and grant access
+2. WHEN user enters invalid credentials THEN system SHALL display clear error message
+3. WHEN user enters malformed email THEN system SHALL validate format and show error
+4. IF user account is locked THEN system SHALL display account locked message
+
+### Requirement 2
+
+**User Story:** As a user, I want to logout securely, so that no one can access my account from the same device.
+
+#### Acceptance Criteria
+
+1. WHEN user clicks logout THEN system SHALL end session and redirect to login
+2. WHEN logout occurs THEN system SHALL clear all session data and tokens
+      ]]></example>
+    </template>
+
+    <template name="design_document">
+      <structure>
+        <section name="overview">
+          <purpose>Provide high-level design approach and key decisions</purpose>
+          <content>
+            <item>Architecture style (e.g., layered, microservices)</item>
+            <item>Key technologies and frameworks</item>
+            <item>Design principles and patterns</item>
+            <item>Assumptions and constraints</item>
+          </content>
+        </section>
+
+        <section name="architecture">
+          <purpose>Describe system structure and component relationships</purpose>
+          <content>
+            <item>High-level component diagram</item>
+            <item>Data flow between components</item>
+            <item>External system integrations</item>
+            <item>Deployment architecture</item>
+          </content>
+        </section>
+
+        <section name="components_and_interfaces">
+          <purpose>Detail individual components and their interfaces</purpose>
+          <content>
+            <item>Component responsibilities</item>
+            <item>API specifications</item>
+            <item>Data contracts</item>
+            <item>Interface definitions</item>
+          </content>
+        </section>
+
+        <section name="data_models">
+          <purpose>Define data structures and relationships</purpose>
+          <content>
+            <item>Entity definitions</item>
+            <item>Database schema</item>
+            <item>Relationships and constraints</item>
+            <item>Data validation rules</item>
+          </content>
+        </section>
+
+        <section name="error_handling">
+          <purpose>Define error management strategy</purpose>
+          <content>
+            <item>Error types and categories</item>
+            <item>Error response formats</item>
+            <item>Error logging and monitoring</item>
+            <item>Recovery strategies</item>
+          </content>
+        </section>
+
+        <section name="testing_strategy">
+          <purpose>Outline validation approach</purpose>
+          <content>
+            <item>Unit testing approach</item>
+            <item>Integration testing</item>
+            <item>End-to-end testing</item>
+            <item>Test data management</item>
+          </content>
+        </section>
+      </structure>
+    </template>
+
+    <template name="tasks_document">
+      <structure>
+        <purpose>Break design into executable coding tasks</purpose>
+        <format>
+          <checkbox_format>- [ ] Task description</checkbox_format>
+          <numbering_format>Use decimal notation for subtasks (1.1, 1.2, 2.1)</numbering_format>
+          <requirement_references>_Requirements: X.Y, Z.W_</requirement_references>
+        </format>
+
+        <task_categories>
+          <category name="setup_tasks">
+            <purpose>Establish project structure and core interfaces</purpose>
+            <examples>
+              <task>Create directory structure for components</task>
+              <task>Define core interfaces and types</task>
+              <task>Set up basic project configuration</task>
+            </examples>
+          </category>
+
+          <category name="data_layer_tasks">
+            <purpose>Implement data models and persistence</purpose>
+            <examples>
+              <task>Create data model interfaces and types</task>
+              <task>Implement data validation functions</task>
+              <task>Set up database connection and utilities</task>
+            </examples>
+          </category>
+
+          <category name="business_logic_tasks">
+            <purpose>Implement core business functionality</purpose>
+            <examples>
+              <task>Create service layer with business logic</task>
+              <task>Implement business rules and validations</task>
+              <task>Add error handling for business operations</task>
+            </examples>
+          </category>
+
+          <category name="api_layer_tasks">
+            <purpose>Create API endpoints and interfaces</purpose>
+            <examples>
+              <task>Define API route structures</task>
+              <task>Implement request/response handlers</task>
+              <task>Add input validation and sanitization</task>
+            </examples>
+          </category>
+
+          <category name="testing_tasks">
+            <purpose>Add comprehensive testing</purpose>
+            <examples>
+              <task>Write unit tests for core functions</task>
+              <task>Create integration tests for API endpoints</task>
+              <task>Add end-to-end tests for user workflows</task>
+            </examples>
+          </category>
+
+          <category name="integration_tasks">
+            <purpose>Wire components together and finalize</purpose>
+            <examples>
+              <task>Connect all layers and components</task>
+              <task>Add configuration and startup logic</task>
+              <task>Implement health checks and monitoring</task>
+            </examples>
+          </category>
+        </task_categories>
+      </structure>
+
+      <example><![CDATA[
+# Implementation Plan
+
+- [ ] 1. Set up project structure and core interfaces
+  - Create directory structure for models, services, and API components
+  - Define TypeScript interfaces for core data models
+  - Set up basic project configuration and dependencies
+  - _Requirements: 1.1, 2.1_
+
+- [ ] 2. Implement user authentication data models
+- [ ] 2.1 Create User model interface and validation
+  - Define User interface with email, password, and profile fields
+  - Implement password hashing and validation functions
+  - Add input sanitization for user data
+  - _Requirements: 1.2, 3.1_
+- [ ] 2.2 Implement Session model for user sessions
+  - Create Session interface with token and expiry
+  - Add session validation and cleanup logic
+  - _Requirements: 1.3, 3.2_
+
+- [ ] 3. Create authentication service layer
+- [ ] 3.1 Implement login functionality
+  - Create login service method with credential validation
+  - Add password verification logic
+  - Return session token on successful authentication
+  - _Requirements: 1.1, 2.2_
+      ]]></example>
+    </template>
+  </document_templates>
+
+  <approval_patterns>
+    <pattern name="requirements_approval">
+      <question>Do the requirements look good? If so, we can move on to the design.</question>
+      <reason>spec-requirements-review</reason>
+      <follow_up_suggestions>
+        <suggestion>Yes, the requirements look complete</suggestion>
+        <suggestion>I need to add some requirements</suggestion>
+        <suggestion>I need to modify an existing requirement</suggestion>
+        <suggestion>The requirements need clarification on X</suggestion>
+      </follow_up_suggestions>
+    </pattern>
+
+    <pattern name="design_approval">
+      <question>Does the design look good? If so, we can move on to the implementation plan.</question>
+      <reason>spec-design-review</reason>
+      <follow_up_suggestions>
+        <suggestion>Yes, the design addresses all requirements</suggestion>
+        <suggestion>I need changes to the architecture</suggestion>
+        <suggestion>The data models need modification</suggestion>
+        <suggestion>I need clarification on the technical approach</suggestion>
+      </follow_up_suggestions>
+    </pattern>
+
+    <pattern name="tasks_approval">
+      <question>Do the tasks look good?</question>
+      <reason>spec-tasks-review</reason>
+      <follow_up_suggestions>
+        <suggestion>Yes, these tasks will implement the feature</suggestion>
+        <suggestion>I need to add a task</suggestion>
+        <suggestion>A task needs to be modified</suggestion>
+        <suggestion>The task order needs adjustment</suggestion>
+      </follow_up_suggestions>
+    </pattern>
+  </approval_patterns>
+
+  <research_patterns>
+    <pattern name="technical_research">
+      <when_to_use>When design decisions require investigation of technologies, libraries, or patterns</when_to_use>
+      <approach>
+        <step>Identify specific research questions from requirements</step>
+        <step>Investigate available options and their trade-offs</step>
+        <step>Document findings with sources and recommendations</step>
+        <step>Integrate findings into design document</step>
+      </approach>
+      <example>
+        <question>Research shows Firebase provides better scalability than custom JWT for our use case</question>
+        <integration>Therefore, we'll use Firebase Auth for user management</integration>
+      </example>
+    </pattern>
+
+    <pattern name="best_practices_research">
+      <when_to_use>When implementing common patterns or following industry standards</when_to_use>
+      <approach>
+        <step>Identify the pattern or practice being considered</step>
+        <step>Research current best practices and alternatives</step>
+        <step>Evaluate applicability to current requirements</step>
+        <step>Document decision rationale in design</step>
+      </approach>
+      <example>
+        <question>Industry best practices recommend using refresh tokens with short-lived access tokens</question>
+        <integration>Our authentication system will implement this pattern</integration>
+      </example>
+    </pattern>
+  </research_patterns>
+
+  <iteration_patterns>
+    <pattern name="feedback_incorporation">
+      <process>
+        <step>Receive user feedback on document</step>
+        <step>Analyze requested changes for impact</step>
+        <step>Update document with all requested modifications</step>
+        <step>Verify changes align with overall requirements</step>
+        <step>Request re-approval from user</step>
+      </process>
+      <tips>
+        <tip>Make all requested changes, even if you disagree</tip>
+        <tip>Ask clarifying questions if changes are unclear</tip>
+        <tip>Document rationale when making additional improvements</tip>
+      </tips>
+    </pattern>
+
+    <pattern name="gap_identification">
+      <process>
+        <step>Review document against requirements</step>
+        <step>Identify missing or incomplete sections</step>
+        <step>Ask user to clarify or provide missing information</step>
+        <step>Offer to return to previous phase if needed</step>
+        <step>Update document with clarified information</step>
+      </process>
+      <triggers>
+        <trigger>Requirements don't cover all user scenarios</trigger>
+        <trigger>Design doesn't address all acceptance criteria</trigger>
+        <trigger>Tasks don't cover all design components</trigger>
+      </triggers>
+    </pattern>
+  </iteration_patterns>
+</common_patterns>

@@ -1,0 +1,140 @@
+<tool_usage_guide>
+  <tool_priorities>
+    <priority level="1">
+      <tool>read_file</tool>
+      <when>Reading existing spec documents to understand current progress</when>
+      <why>Ensures you have full context before making changes</why>
+    </priority>
+    <priority level="2">
+      <tool>write_to_file</tool>
+      <when>Creating new spec documents (requirements.md, design.md, tasks.md)</when>
+      <why>Creates the complete document structure at once</why>
+    </priority>
+    <priority level="3">
+      <tool>apply_diff</tool>
+      <when>Making targeted updates to existing spec documents</when>
+      <why>Allows precise modifications without rewriting entire files</why>
+    </priority>
+    <priority level="4">
+      <tool>ask_followup_question</tool>
+      <when>Seeking user approval or clarification during iterative phases</when>
+      <why>Maintains the feedback loop essential for spec refinement</why>
+    </priority>
+  </tool_priorities>
+
+  <tool_specific_guidance>
+    <tool name="write_to_file">
+      <purpose>Create new spec documents with complete content</purpose>
+      <when_to_use>When initializing requirements.md, design.md, or tasks.md</when_to_use>
+      <best_practices>
+        <practice>Create documents in the correct order: requirements first, then design, then tasks</practice>
+        <practice>Use the templates from common_patterns.xml as starting points</practice>
+        <practice>Ensure complete, well-formatted content in a single write operation</practice>
+      </best_practices>
+      <examples>
+        <example scenario="creating initial requirements document">
+          <code>write_to_file with path '.kiro/specs/{feature_name}/requirements.md' and complete EARS-formatted content</code>
+          <output>New requirements.md file created with introduction, user stories, and acceptance criteria</output>
+        </example>
+      </examples>
+    </tool>
+
+    <tool name="apply_diff">
+      <purpose>Update existing spec documents with user feedback</purpose>
+      <when_to_use>After user provides changes or additions to any spec document</when_to_use>
+      <best_practices>
+        <practice>Always read the file first to get exact content for SEARCH blocks</practice>
+        <practice>Make all changes in a single diff operation when possible</practice>
+        <practice>Include sufficient context in SEARCH blocks to ensure uniqueness</practice>
+      </best_practices>
+      <examples>
+        <example scenario="adding new requirement after user feedback">
+          <code><![CDATA[
+<apply_diff>
+<path>.kiro/specs/{feature_name}/requirements.md</path>
+<diff>
+<<<<<<< SEARCH
+### Requirement 2
+
+**User Story:** As a user, I want to logout securely...
+=======
+### Requirement 2
+
+**User Story:** As a user, I want to logout securely...
+
+### Requirement 3
+
+**User Story:** As an admin, I want to manage user accounts...
+>>>>>>> REPLACE
+</diff>
+</apply_diff>
+          ]]></code>
+          <output>Requirements document updated with new requirement section</output>
+        </example>
+      </examples>
+    </tool>
+
+    <tool name="ask_followup_question">
+      <purpose>Get user approval or clarification during iterative workflow</purpose>
+      <when_to_use>After completing each phase (requirements, design, tasks)</when_to_use>
+      <best_practices>
+        <practice>Use exact reason strings: 'spec-requirements-review', 'spec-design-review', 'spec-tasks-review'</practice>
+        <practice>Provide 2-4 specific, actionable follow-up suggestions</practice>
+        <practice>Order suggestions by likelihood or logical sequence</practice>
+        <practice>Make suggestions complete without placeholders</practice>
+      </best_practices>
+      <examples>
+        <example scenario="requirements approval">
+          <code>ask_followup_question with question "Do the requirements look good? If so, we can move on to the design." and reason "spec-requirements-review"</code>
+          <output>User can respond with approval or request changes</output>
+        </example>
+      </examples>
+    </tool>
+
+    <tool name="read_file">
+      <purpose>Access existing spec documents for context or updates</purpose>
+      <when_to_use>Before making changes to understand current state, or when referencing existing specs</when_to_use>
+      <best_practices>
+        <practice>Read files in logical order: requirements first, then design, then tasks</practice>
+        <practice>Use read content to inform subsequent document creation</practice>
+        <practice>Reference specific requirements in task creation</practice>
+      </best_practices>
+      <examples>
+        <example scenario="reviewing requirements before design">
+          <code>read_file with path '.kiro/specs/{feature_name}/requirements.md'</code>
+          <output>Full content of requirements document for design planning</output>
+        </example>
+      </examples>
+    </tool>
+  </tool_specific_guidance>
+
+  <workflow_specific_tool_usage>
+    <phase name="requirements_gathering">
+      <primary_tools>write_to_file, ask_followup_question</primary_tools>
+      <sequence>
+        <step>Create initial requirements.md using write_to_file</step>
+        <step>Use ask_followup_question for approval</step>
+        <step>Use apply_diff iteratively based on user feedback</step>
+      </sequence>
+    </phase>
+
+    <phase name="design_creation">
+      <primary_tools>read_file, write_to_file, ask_followup_question</primary_tools>
+      <sequence>
+        <step>Read requirements.md for context</step>
+        <step>Create design.md using write_to_file</step>
+        <step>Use ask_followup_question for approval</step>
+        <step>Use apply_diff for refinements</step>
+      </sequence>
+    </phase>
+
+    <phase name="task_breakdown">
+      <primary_tools>read_file, write_to_file, ask_followup_question</primary_tools>
+      <sequence>
+        <step>Read both requirements.md and design.md</step>
+        <step>Create tasks.md using write_to_file</step>
+        <step>Use ask_followup_question for final approval</step>
+      </sequence>
+    </phase>
+  </workflow_specific_tool_usage>
+</tool_usage_guide>

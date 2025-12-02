@@ -3,6 +3,7 @@ import tailwindcss from "@tailwindcss/vite";
 import type { ConfigEnv, UserConfig, Plugin } from "vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+import { visualizer } from "rollup-plugin-visualizer";
 
 // import { cloudflare } from "@cloudflare/vite-plugin";
 
@@ -63,9 +64,16 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
       tsconfigPaths({
         configNames: ["tsconfig.dev.json"],
       }),
-      //      cloudflare(),
       ...(!disableReactRouter ? [reactRouter()] : []),
       moveImportmapFirst(),
+      // Add bundle analyzer plugin for production builds
+      visualizer({
+        open: true, // Automatically open the report in browser
+        gzipSize: true, // Show gzipped sizes
+        brotliSize: true, // Show brotli compressed sizes
+        filename: "bundle-analysis.html", // Output filename
+        template: "treemap", // Use treemap visualization
+      }),
     ],
     base: process.env.VITE_APP_BASENAME || "/",
     ssr: {

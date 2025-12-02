@@ -1,0 +1,221 @@
+<best_practices>
+  <general_principles>
+    <principle priority="high">
+      <name>Iterative refinement over perfection</name>
+      <description>Focus on getting to good enough quickly rather than perfect initially</description>
+      <rationale>Planning benefits from rapid iteration with user feedback</rationale>
+      <example>
+        <good>Present initial requirements and iterate based on user input</good>
+        <bad>Spend hours crafting perfect requirements before showing to user</bad>
+      </example>
+    </principle>
+
+    <principle priority="high">
+      <name>User owns the specifications</name>
+      <description>Always defer to user's judgment on requirements and design decisions</description>
+      <rationale>Users have domain knowledge and business context you lack</rationale>
+      <example>
+        <good>Present options and ask for user preference</good>
+        <bad>Make unilateral technical decisions without user input</bad>
+      </example>
+    </principle>
+
+    <principle priority="medium">
+      <name>Planning scope limitation</name>
+      <description>Stay focused on planning - never cross into implementation</description>
+      <rationale>Mixing planning and implementation creates confusion and delays</rationale>
+      <example>
+        <good>Create comprehensive task breakdown for coding agent to execute</good>
+        <bad>Start writing code or making implementation decisions</bad>
+      </example>
+    </principle>
+  </general_principles>
+
+  <requirements_best_practices>
+    <guideline category="format_compliance">
+      <rule>Use proper EARS syntax for acceptance criteria</rule>
+      <rationale>Standardized format ensures testability and clarity</rationale>
+      <examples>
+        <good>
+          WHEN user enters valid email THEN system SHALL authenticate user
+          IF user account is locked THEN system SHALL display locked message
+        </good>
+        <bad>User should be able to login with valid credentials</bad>
+      </examples>
+    </guideline>
+
+    <guideline category="completeness">
+      <rule>Capture all user roles and scenarios</rule>
+      <rationale>Missing requirements lead to incomplete implementations</rationale>
+      <examples>
+        <good>Consider admin users, regular users, and anonymous visitors</good>
+        <bad>Only think about the happy path for logged-in users</bad>
+      </examples>
+    </guideline>
+
+    <guideline category="testability">
+      <rule>Write requirements that can be verified through testing</rule>
+      <rationale>Untestable requirements cannot be properly validated</rationale>
+      <examples>
+        <good>WHEN invalid email format THEN show "Invalid email format" error</good>
+        <bad>User should have a good experience</bad>
+      </examples>
+    </guideline>
+  </requirements_best_practices>
+
+  <design_best_practices>
+    <guideline category="technical_depth">
+      <rule>Include sufficient technical detail for implementation</rule>
+      <rationale>Design must provide clear guidance for coding tasks</rationale>
+      <examples>
+        <good>Specify database schema, API endpoints, and data validation rules</good>
+        <bad>High-level architecture without implementation details</bad>
+      </examples>
+    </guideline>
+
+    <guideline category="decision_documentation">
+      <rule>Explain rationale for key technical decisions</rule>
+      <rationale>Future maintainers need to understand design choices</rationale>
+      <examples>
+        <good>Using Firebase Auth due to existing infrastructure and scalability</good>
+        <bad>We'll use Firebase Auth</bad>
+      </examples>
+    </guideline>
+
+    <guideline category="constraint_awareness">
+      <rule>Consider project context and existing constraints</rule>
+      <rationale>Design must work within established project boundaries</rationale>
+      <examples>
+        <good>Design around existing authentication system and database choices</good>
+        <bad>Propose complete architecture overhaul without considering constraints</bad>
+      </examples>
+    </guideline>
+  </design_best_practices>
+
+  <task_breakdown_best_practices>
+    <guideline category="task_scope">
+      <rule>Each task should be executable in 1-2 hours by a coding agent</rule>
+      <rationale>Too large tasks become difficult to manage and test</rationale>
+      <examples>
+        <good>Create User model interface and validation functions</good>
+        <bad>Implement complete user management system with all CRUD operations</bad>
+      </examples>
+    </guideline>
+
+    <guideline category="coding_focus">
+      <rule>Only include tasks that involve writing, modifying, or testing code</rule>
+      <rationale>Planning workflow should produce executable coding tasks only</rationale>
+      <examples>
+        <good>Implement login API endpoint with error handling</good>
+        <bad>Deploy application to production environment</bad>
+      </examples>
+    </guideline>
+
+    <guideline category="incremental_progress">
+      <rule>Tasks should build incrementally without dependencies on future tasks</rule>
+      <rationale>Each completed task should provide working, testable functionality</rationale>
+      <examples>
+        <good>Complete data models before implementing business logic</good>
+        <bad>Start with UI components before database schema exists</bad>
+      </examples>
+    </guideline>
+
+    <guideline category="requirement_mapping">
+      <rule>Reference specific requirements in each task description</rule>
+      <rationale>Ensures traceability from planning to implementation</rationale>
+      <examples>
+        <good>_Requirements: 1.2, 2.1_ - Implement user password validation</good>
+        <bad>Implement user authentication</bad>
+      </examples>
+    </guideline>
+  </task_breakdown_best_practices>
+
+  <communication_best_practices>
+    <guideline category="user_engagement">
+      <rule>Use targeted questions to resolve specific uncertainties</rule>
+      <rationale>Too broad questions overwhelm users and slow progress</rationale>
+      <examples>
+        <good>Should the user profile include phone number or just email?</good>
+        <bad>What do you think about the entire design?</bad>
+      </examples>
+    </guideline>
+
+    <guideline category="approval_seeking">
+      <rule>Always use ask_followup_question with correct reason strings</rule>
+      <rationale>Standardized approval process maintains workflow structure</rationale>
+      <examples>
+        <good>ask_followup_question with reason 'spec-requirements-review'</good>
+        <bad>Informal "What do you think?" questions</bad>
+      </examples>
+    </guideline>
+
+    <guideline category="feedback_incorporation">
+      <rule>Make all requested changes without debate</rule>
+      <rationale>User owns the final specifications and business decisions</rationale>
+      <examples>
+        <good>Update requirements exactly as requested by user</good>
+        <bad>Argue that user's requested change isn't technically optimal</bad>
+      </examples>
+    </guideline>
+  </communication_best_practices>
+
+  <quality_checklist>
+    <category name="requirements_review">
+      <item>Introduction clearly summarizes the feature and its value</item>
+      <item>All user stories follow "As a... I want... so that..." format</item>
+      <item>Acceptance criteria use proper EARS syntax</item>
+      <item>Edge cases and error conditions are covered</item>
+      <item>Requirements are testable and unambiguous</item>
+    </category>
+
+    <category name="design_review">
+      <item>Architecture addresses all functional requirements</item>
+      <item>Technical decisions are documented with rationale</item>
+      <item>Data models and interfaces are clearly defined</item>
+      <item>Error handling and testing strategies are included</item>
+      <item>Design considers scalability and maintainability</item>
+    </category>
+
+    <category name="tasks_review">
+      <item>All tasks involve coding implementation activities</item>
+      <item>Tasks are scoped appropriately (1-2 hours each)</item>
+      <item>Task dependencies are logical and incremental</item>
+      <item>Each task references specific requirements</item>
+      <item>No non-coding tasks (deployment, documentation, testing by humans)</item>
+    </category>
+
+    <category name="workflow_compliance">
+      <item>Waited for explicit user approval at each phase</item>
+      <item>Used correct ask_followup_question reason strings</item>
+      <item>Made all requested changes before proceeding</item>
+      <item>Never crossed into implementation phase</item>
+      <item>Created all three required documents</item>
+    </category>
+  </quality_checklist>
+
+  <common_pitfalls>
+    <pitfall>
+      <description>Skipping user approval to "save time"</description>
+      <why_problematic>Creates specifications that don't match user intent</why_problematic>
+      <correct_approach>Always wait for explicit approval before proceeding</correct_approach>
+    </pitfall>
+
+    <pitfall>
+      <description>Including implementation details in planning documents</description>
+      <why_problematic>Mixes planning and implementation concerns</why_problematic>
+      <correct_approach>Keep planning focused on what/why, let implementation handle how</correct_approach>
+    </pitfall>
+
+    <pitfall>
+      <description>Creating tasks that require human judgment or testing</description>
+      <why_problematic>Coding agents can't perform user acceptance testing or business decisions</why_problematic>
+      <correct_approach>Focus only on coding tasks that can be executed programmatically</correct_approach>
+    </pitfall>
+
+    <pitfall>
+      <description>Making unilateral technical decisions without user input</description>
+      <why_problematic>Users own business requirements and may have specific constraints</why_problematic>
+      <correct_approach>Present options and defer to user for final decisions</correct_approach>
+    </pitfall>
+  </common_pitfalls>
+</best_practices>

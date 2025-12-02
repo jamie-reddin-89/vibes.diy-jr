@@ -1,0 +1,564 @@
+<bolt_common_patterns>
+  <project_templates>
+    <template name="basic_react_supabase">
+      <description>Basic React application with Supabase integration</description>
+      <structure>
+        <directory>Basic React + Supabase Template</directory>
+        <files>
+          <file>README.md - Project documentation</file>
+          <file>package.json - All dependencies and scripts</file>
+          <file>vite.config.ts - Vite configuration for development server</file>
+          <file>index.html - HTML entry point</file>
+          <file>src/main.tsx - React application entry</file>
+          <file>src/App.tsx - Main application component</file>
+          <file>src/lib/supabase.ts - Supabase client configuration</file>
+          <file>.env - Environment variables for Supabase</file>
+          <file>supabase/migrations/ - Database schema migrations</file>
+        </files>
+      </structure>
+      <components>
+        <component>Authentication components (login/register)</component>
+        <component>Data display components</component>
+        <component>Form components for CRUD operations</component>
+        <component>Error handling components</component>
+      </components>
+    </template>
+
+    <template name="full_stack_crud">
+      <description>Complete CRUD application with user authentication</description>
+      <structure>
+        <directory>Full-Stack CRUD Application</directory>
+        <additional_files>
+          <file>src/components/auth/ - Authentication components</file>
+          <file>src/components/common/ - Reusable UI components</file>
+          <file>src/pages/ - Page-level components</file>
+          <file>src/hooks/ - Custom React hooks</file>
+          <file>src/utils/ - Utility functions</file>
+          <file>src/types/ - TypeScript type definitions</file>
+        </additional_files>
+      </structure>
+      <features>
+        <feature>User registration and login</feature>
+        <feature>Protected routes and authentication guards</feature>
+        <feature>Complete CRUD operations with forms</feature>
+        <feature>Data validation and error handling</feature>
+        <feature>Responsive UI design</feature>
+      </features>
+    </template>
+  </project_templates>
+
+  <reusable_patterns>
+    <pattern name="supabase_client_setup">
+      <description>Standard Supabase client configuration pattern</description>
+      <implementation><![CDATA[
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Missing Supabase environment variables')
+}
+
+export const supabase = createClient(supabaseUrl, supabaseKey)
+      ]]></implementation>
+      <usage>Used in every Supabase-integrated application</usage>
+    </pattern>
+
+    <pattern name="authentication_context">
+      <description>React context for managing authentication state</description>
+      <implementation><![CDATA[
+import React, { createContext, useContext, useEffect, useState } from 'react'
+import { User, Session } from '@supabase/supabase-js'
+import { supabase } from '../lib/supabase'
+
+interface AuthContextType {
+  user: User | null
+  session: Session | null
+  loading: boolean
+  signIn: (email: string, password: string) => Promise<void>
+  signUp: (email: string, password: string) => Promise<void>
+  signOut: () => Promise<void>
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session)
+        setUser(session?.user ?? null)
+        setLoading(false)
+      }
+    )
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+    if (error) throw error
+  }
+
+  const signUp = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+    })
+    if (error) throw error
+  }
+
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
+  }
+
+  const value = {
+    user,
+    session,
+    loading,
+    signIn,
+    signUp,
+    signOut,
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
+}
+      ]]></implementation>
+      <usage>Provides authentication state management across the application</usage>
+    </pattern>
+
+    <pattern name="protected_route">
+      <description>Route protection component for authenticated users</description>
+      <implementation><![CDATA[
+import { ReactNode } from 'react'
+import { Navigate, useLocation } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
+
+interface ProtectedRouteProps {
+  children: ReactNode
+}
+
+export function ProtectedRoute({ children }: ProtectedRouteProps) {
+  const { user, loading } = useAuth()
+  const location = useLocation()
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />
+  }
+
+  return <>{children}</>
+}
+      ]]></implementation>
+      <usage>Wraps components that require authentication</usage>
+    </pattern>
+
+    <pattern name="crud_hooks">
+      <description>Custom hooks for CRUD operations with proper error handling</description>
+      <implementation><![CDATA[
+import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
+
+interface UseItemsReturn<T> {
+  items: T[]
+  loading: boolean
+  error: string | null
+  createItem: (item: Omit<T, 'id'>) => Promise<void>
+  updateItem: (id: string, updates: Partial<T>) => Promise<void>
+  deleteItem: (id: string) => Promise<void>
+  refresh: () => Promise<void>
+}
+
+export function useItems<T extends { id: string }>(
+  table: string
+): UseItemsReturn<T> {
+  const [items, setItems] = useState<T[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchItems = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const { data, error } = await supabase
+        .from(table)
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      setItems(data || [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchItems()
+  }, [table])
+
+  const createItem = async (item: Omit<T, 'id'>) => {
+    try {
+      setError(null)
+
+      const { data, error } = await supabase
+        .from(table)
+        .insert([item])
+        .select()
+        .single()
+
+      if (error) throw error
+
+      setItems(prev => [data, ...prev])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create item')
+      throw err
+    }
+  }
+
+  const updateItem = async (id: string, updates: Partial<T>) => {
+    try {
+      setError(null)
+
+      const { data, error } = await supabase
+        .from(table)
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      setItems(prev =>
+        prev.map(item => item.id === id ? data : item)
+      )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update item')
+      throw err
+    }
+  }
+
+  const deleteItem = async (id: string) => {
+    try {
+      setError(null)
+
+      const { error } = await supabase
+        .from(table)
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+
+      setItems(prev => prev.filter(item => item.id !== id))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete item')
+      throw err
+    }
+  }
+
+  return {
+    items,
+    loading,
+    error,
+    createItem,
+    updateItem,
+    deleteItem,
+    refresh: fetchItems,
+  }
+}
+      ]]></implementation>
+      <usage>Provides complete CRUD functionality with loading states and error handling</usage>
+    </pattern>
+  </reusable_patterns>
+
+  <database_patterns>
+    <pattern name="rls_policy_templates">
+      <description>Standard Row Level Security policy templates</description>
+      <policies>
+        <policy name="user_owns_record">
+          <description>Users can only access their own records</description>
+          <sql_template><![CDATA[
+-- Enable RLS
+ALTER TABLE {table_name} ENABLE ROW LEVEL SECURITY;
+
+-- Policy for SELECT (users can read their own data)
+CREATE POLICY "{table_name}_select_policy" ON {table_name}
+FOR SELECT TO authenticated
+USING (auth.uid() = user_id);
+
+-- Policy for INSERT (users can create their own records)
+CREATE POLICY "{table_name}_insert_policy" ON {table_name}
+FOR INSERT TO authenticated
+WITH CHECK (auth.uid() = user_id);
+
+-- Policy for UPDATE (users can update their own records)
+CREATE POLICY "{table_name}_update_policy" ON {table_name}
+FOR UPDATE TO authenticated
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+-- Policy for DELETE (users can delete their own records)
+CREATE POLICY "{table_name}_delete_policy" ON {table_name}
+FOR DELETE TO authenticated
+USING (auth.uid() = user_id);
+          ]]></sql_template>
+        </policy>
+
+        <policy name="public_read_private_write">
+          <description>Public can read, only authenticated users can write</description>
+          <sql_template><![CDATA[
+-- Enable RLS
+ALTER TABLE {table_name} ENABLE ROW LEVEL SECURITY;
+
+-- Policy for SELECT (anyone can read)
+CREATE POLICY "{table_name}_select_policy" ON {table_name}
+FOR SELECT TO authenticated, anon
+USING (true);
+
+-- Policy for INSERT (only authenticated users can create)
+CREATE POLICY "{table_name}_insert_policy" ON {table_name}
+FOR INSERT TO authenticated
+WITH CHECK (auth.uid() = user_id);
+
+-- Policy for UPDATE (only authenticated users can update)
+CREATE POLICY "{table_name}_update_policy" ON {table_name}
+FOR UPDATE TO authenticated
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+-- Policy for DELETE (only authenticated users can delete)
+CREATE POLICY "{table_name}_delete_policy" ON {table_name}
+FOR DELETE TO authenticated
+USING (auth.uid() = user_id);
+          ]]></sql_template>
+        </policy>
+      </policies>
+    </pattern>
+
+    <pattern name="migration_structure">
+      <description>Standard migration file structure with documentation</description>
+      <template><![CDATA[
+/*
+# {Migration Title}
+
+## Overview
+{Detailed description of what this migration does}
+
+## Changes
+### New Tables
+- `{table_name}`
+  - `{column_name}` ({data_type}) - {description}
+  - `{column_name}` ({data_type}) - {description}
+
+### Security
+- Enable RLS on `{table_name}` table
+- Add policy for {policy_description}
+- Add policy for {policy_description}
+
+### Indexes
+- Add index on `{table_name}({column_name})` for {performance_reason}
+*/
+
+-- Create table
+CREATE TABLE IF NOT EXISTS {table_name} (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+  {additional_columns}
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+-- Enable RLS
+ALTER TABLE {table_name} ENABLE ROW LEVEL SECURITY;
+
+-- Create policies
+CREATE POLICY "{table_name}_select_policy" ON {table_name}
+FOR SELECT TO authenticated
+USING (auth.uid() = user_id);
+
+CREATE POLICY "{table_name}_insert_policy" ON {table_name}
+FOR INSERT TO authenticated
+WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "{table_name}_update_policy" ON {table_name}
+FOR UPDATE TO authenticated
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "{table_name}_delete_policy" ON {table_name}
+FOR DELETE TO authenticated
+USING (auth.uid() = user_id);
+
+-- Create indexes
+CREATE INDEX IF NOT EXISTS {table_name}_user_id_idx ON {table_name}(user_id);
+CREATE INDEX IF NOT EXISTS {table_name}_created_at_idx ON {table_name}(created_at);
+      ]]></template>
+      <usage>Template for creating comprehensive database migrations</usage>
+    </pattern>
+  </database_patterns>
+
+  <ui_component_patterns>
+    <pattern name="loading_states">
+      <description>Consistent loading state components and patterns</description>
+      <components>
+        <component name="Spinner">
+          <implementation><![CDATA[
+function Spinner({ size = "md", className = "" }: {
+  size?: "sm" | "md" | "lg"
+  className?: string
+}) {
+  const sizeClasses = {
+    sm: "h-4 w-4",
+    md: "h-8 w-8",
+    lg: "h-12 w-12"
+  }
+
+  return (
+    <div className={`animate-spin rounded-full border-2 border-gray-300 border-t-blue-500 ${sizeClasses[size]} ${className}`} />
+  )
+}
+          ]]></implementation>
+        </component>
+
+        <component name="LoadingPage">
+          <implementation><![CDATA[
+function LoadingPage({ message = "Loading..." }: { message?: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+      <Spinner size="lg" />
+      <p className="mt-4 text-gray-600">{message}</p>
+    </div>
+  )
+}
+          ]]></implementation>
+        </component>
+      </components>
+    </pattern>
+
+    <pattern name="error_handling">
+      <description>Standard error display and handling patterns</description>
+      <components>
+        <component name="ErrorMessage">
+          <implementation><![CDATA[
+function ErrorMessage({
+  error,
+  onRetry
+}: {
+  error: string
+  onRetry?: () => void
+}) {
+  return (
+    <div className="rounded-md bg-red-50 p-4">
+      <div className="flex">
+        <div className="flex-shrink-0">
+          <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+          </svg>
+        </div>
+        <div className="ml-3">
+          <p className="text-sm font-medium text-red-800">{error}</p>
+          {onRetry && (
+            <button
+              onClick={onRetry}
+              className="mt-2 text-sm font-medium text-red-800 underline hover:text-red-600"
+            >
+              Try again
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+          ]]></implementation>
+        </component>
+      </components>
+    </pattern>
+
+    <pattern name="form_patterns">
+      <description>Standard form components with validation</description>
+      <components>
+        <component name="FormField">
+          <implementation><![CDATA[
+function FormField({
+  label,
+  name,
+  type = "text",
+  value,
+  onChange,
+  error,
+  required = false,
+  placeholder
+}: {
+  label: string
+  name: string
+  type?: string
+  value: string
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  error?: string
+  required?: boolean
+  placeholder?: string
+}) {
+  return (
+    <div>
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
+      <input
+        type={type}
+        name={name}
+        id={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        required={required}
+        className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
+          error ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''
+        }`}
+      />
+      {error && (
+        <p className="mt-1 text-sm text-red-600">{error}</p>
+      )}
+    </div>
+  )
+}
+          ]]></implementation>
+        </component>
+      </components>
+    </pattern>
+  </ui_component_patterns>
+</bolt_common_patterns>

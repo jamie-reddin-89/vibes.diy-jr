@@ -355,4 +355,5 @@ function prepareRequestParams(prompt: string | Message[], options: CallAIOptions
 }
 
 // Export main API functions
-export { callAi, bufferStreamingResults, createBackwardCompatStreamingProxy, prepareRequestParams, PACKAGE_VERSION };
+export { callAi };
+export { createBackwardCompatStreamingProxy };
