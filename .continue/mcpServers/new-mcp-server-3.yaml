@@ -1,0 +1,15 @@
+name: Mem0 Memory
+version: 0.0.1
+schema: v1
+mcpServers:
+  - name: mem0-memory-mcp
+    command: npx
+    args:
+      - -y
+      -  "@smithery/cli@latest"
+      -  run
+      -  "@mem0ai/mem0-memory-mcp"
+      -  --key
+      -  "0dfcc6e0-b5ae-4ff1-bb18-8a119fb79ae2"
+      -  --profile
+      -  "uncomfortable-echidna-lCSA7v"

@@ -1,0 +1,13 @@
+name: Context7
+version: 0.0.1
+schema: v1
+mcpServers:
+  - name: context7-mcp
+    command: npx
+    args:
+      - -y
+      - "@smithery/cli@latest"
+      - run
+      - "@upstash/context7-mcp"
+      - --key
+      - 0dfcc6e0-b5ae-4ff1-bb18-8a119fb79ae2

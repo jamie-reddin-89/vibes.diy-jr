@@ -1,0 +1,16 @@
+name: Task Breakdown
+version: 0.0.1
+schema: v1
+mcpServers:
+  - name: task-breakdown-server
+    command: npx
+    args:
+      - -y
+      -  "@smithery/cli@latest"
+      -  run
+      -  "@Parc-Dev/task-breakdown-server"
+      -  --key
+      -  "0dfcc6e0-b5ae-4ff1-bb18-8a119fb79ae2"
+      -  --profile
+      -  "uncomfortable-echidna-lCSA7v"
+    env: {}
