@@ -27,8 +27,37 @@ interface VibeWindow extends Window {
  * 2. Transforming the User Code imports to use these window variables instead of URL imports.
  */
 export function setupDevShims() {
+  console.log('[DevShims] Setting up development shims for inline preview');
+  
   if (import.meta.env.DEV) {
     const vibeWindow = window as unknown as VibeWindow;
+    
+    // Verify all required libraries are available
+    if (!React) {
+      console.error('[DevShims] React is not available');
+      return;
+    }
+    if (!ReactDOM) {
+      console.error('[DevShims] ReactDOM is not available');
+      return;
+    }
+    if (!ReactDOMClient) {
+      console.error('[DevShims] ReactDOMClient is not available');
+      return;
+    }
+    if (!JSX) {
+      console.error('[DevShims] JSX runtime is not available');
+      return;
+    }
+    if (!UseVibes) {
+      console.error('[DevShims] UseVibes is not available');
+      return;
+    }
+    if (!CallAI) {
+      console.error('[DevShims] CallAI is not available');
+      return;
+    }
+    
     vibeWindow.__VIBE_REACT__ = React;
     vibeWindow.__VIBE_REACT_DOM__ = ReactDOM;
     vibeWindow.__VIBE_REACT_DOM_CLIENT__ = ReactDOMClient;
@@ -36,6 +65,10 @@ export function setupDevShims() {
     vibeWindow.__VIBE_USE_FIREPROOF__ = UseVibes; // Map use-fireproof imports to use-vibes (enhanced version)
     vibeWindow.__VIBE_USE_VIBES__ = UseVibes;
     vibeWindow.__VIBE_CALL_AI__ = CallAI;
+    
+    console.log('[DevShims] Development shims setup complete');
+  } else {
+    console.log('[DevShims] Not in development mode, skipping shims setup');
   }
 }
 

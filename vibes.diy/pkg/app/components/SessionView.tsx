@@ -16,6 +16,7 @@ import { useAuth } from "@clerk/clerk-react";
 import { trackEvent } from "../utils/analytics.js";
 import { BrutalistCard } from "@vibes.diy/use-vibes-base";
 import LoggedOutView from "./LoggedOutView.js";
+import { TestInlinePreview } from "./ResultPreview/InlinePreview.js";
 
 interface SessionViewProps {
   sessionId: string;
@@ -229,6 +230,9 @@ function AuthenticatedSessionView({
 
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
 
+  // Test mode state for debugging preview issues
+  const [testMode, setTestMode] = useState(false);
+
   // Directly create an openSidebar function
   const openSidebar = useCallback(() => {
     setIsSidebarVisible(true);
@@ -417,23 +421,27 @@ function AuthenticatedSessionView({
           />
         }
         previewPanel={
-          <ResultPreview
-            title={chatState.title}
-            updateTitle={chatState.updateTitle}
-            sessionId={chatState.sessionId} // sessionId is guaranteed non-null from interface
-            code={chatState.selectedCode?.content || ""}
-            isStreaming={chatState.isStreaming}
-            codeReady={chatState.codeReady}
-            onScreenshotCaptured={chatState.addScreenshot}
-            displayView={displayView as ViewType}
-            onPreviewLoaded={handlePreviewLoaded}
-            setMobilePreviewShown={setMobilePreviewShown}
-            setIsIframeFetching={setIsIframeFetching}
-            addError={(error) => chatState.addError(error)}
-            onCodeSave={handleCodeSave}
-            onCodeChange={handleCodeChange}
-            onSyntaxErrorChange={handleSyntaxErrorChange}
-          />
+          testMode && process.env.NODE_ENV === 'development' ? (
+            <TestInlinePreview />
+          ) : (
+            <ResultPreview
+              title={chatState.title}
+              updateTitle={chatState.updateTitle}
+              sessionId={chatState.sessionId} // sessionId is guaranteed non-null from interface
+              code={chatState.selectedCode?.content || ""}
+              isStreaming={chatState.isStreaming}
+              codeReady={chatState.codeReady}
+              onScreenshotCaptured={chatState.addScreenshot}
+              displayView={displayView as ViewType}
+              onPreviewLoaded={handlePreviewLoaded}
+              setMobilePreviewShown={setMobilePreviewShown}
+              setIsIframeFetching={setIsIframeFetching}
+              addError={(error) => chatState.addError(error)}
+              onCodeSave={handleCodeSave}
+              onCodeChange={handleCodeChange}
+              onSyntaxErrorChange={handleSyntaxErrorChange}
+            />
+          )
         }
         chatInput={
           <BrutalistCard size="md" style={{ margin: "0 1rem 1rem 1rem" }}>
@@ -463,6 +471,28 @@ function AuthenticatedSessionView({
         onClose={closeSidebar}
         sessionId={chatState.sessionId} // sessionId is guaranteed non-null from interface
       />
+      {/* Test mode toggle button - only visible in development */}
+      {process.env.NODE_ENV === 'development' && (
+        <button
+          onClick={() => setTestMode(!testMode)}
+          style={{
+            position: 'fixed',
+            top: '10px',
+            right: '10px',
+            zIndex: 1000,
+            backgroundColor: testMode ? '#dc3545' : '#007bff',
+            color: 'white',
+            border: 'none',
+            padding: '8px 12px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px',
+          }}
+          title="Toggle test mode for preview debugging"
+        >
+          {testMode ? 'Exit Test Mode' : 'Test Preview'}
+        </button>
+      )}
     </>
   );
 }

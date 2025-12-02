@@ -28,56 +28,108 @@ export async function mountVibeCode(
 ): Promise<void> {
   let objectURL: string | undefined;
 
+  console.log('[MountVibeCode] Starting mount process', {
+    codeLength: code.length,
+    containerId,
+    titleId,
+    installId,
+    showVibesSwitch,
+    hasApiKey: !!apiKey,
+    chatUrl,
+    imgUrl,
+  });
+
   try {
     // Set window globals for call-ai if provided
     // This allows call-ai to use these values when no explicit options are provided
     if (typeof window !== 'undefined') {
       if (apiKey) {
         window.CALLAI_API_KEY = apiKey;
+        console.log('[MountVibeCode] Set CALLAI_API_KEY');
       }
 
       if (chatUrl) {
         window.CALLAI_CHAT_URL = chatUrl;
+        console.log('[MountVibeCode] Set CALLAI_CHAT_URL');
       }
 
       if (imgUrl) {
         window.CALLAI_IMG_URL = imgUrl;
+        console.log('[MountVibeCode] Set CALLAI_IMG_URL');
       }
     }
+
     // Step 1: Transform imports (rewrite unknown bare imports to esm.sh)
+    console.log('[MountVibeCode] Transforming imports...');
     const codeWithTransformedImports = transformImports(code);
+    console.log('[MountVibeCode] Import transformation complete', {
+      originalLength: code.length,
+      transformedLength: codeWithTransformedImports.length,
+    });
 
     // Step 2: Ensure Babel is loaded (from CDN script tag)
+    console.log('[MountVibeCode] Checking for Babel...');
     if (!window.Babel) {
-      throw new Error(
-        'Babel not loaded - add <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script> to your HTML'
-      );
+      const errorMsg = 'Babel not loaded - add <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script> to your HTML';
+      console.error('[MountVibeCode]', errorMsg);
+      throw new Error(errorMsg);
     }
+    console.log('[MountVibeCode] Babel is available');
 
     // Step 3: Transform JSX to JavaScript (preserve ES modules)
+    console.log('[MountVibeCode] Transforming JSX...');
     const transformed = window.Babel.transform(codeWithTransformedImports, {
       presets: ['react'], // Only transform JSX, keep imports as-is
     });
+    
+    if (!transformed.code) {
+      const errorMsg = 'Babel transformation failed - no output code';
+      console.error('[MountVibeCode]', errorMsg);
+      throw new Error(errorMsg);
+    }
+    
+    console.log('[MountVibeCode] JSX transformation complete', {
+      transformedLength: transformed.code.length,
+    });
 
-    // Step 3: Create Blob URL and dynamically import user's Vibe code
-    const blob = new Blob([transformed.code || ''], { type: 'application/javascript' });
+    // Step 4: Create Blob URL and dynamically import user's Vibe code
+    console.log('[MountVibeCode] Creating blob URL...');
+    const blob = new Blob([transformed.code], { type: 'application/javascript' });
     objectURL = URL.createObjectURL(blob);
+    console.log('[MountVibeCode] Blob URL created:', objectURL);
 
     // Dynamically import the user's Vibe module
+    console.log('[MountVibeCode] Dynamically importing module...');
     const userVibeModule = await import(/* @vite-ignore */ objectURL);
+    console.log('[MountVibeCode] Module imported successfully', {
+      moduleKeys: Object.keys(userVibeModule),
+      hasDefault: !!userVibeModule.default,
+      defaultType: typeof userVibeModule.default,
+    });
 
     const AppComponent = userVibeModule.default;
 
     if (typeof AppComponent === 'undefined') {
-      throw new Error('App component is not defined - check your default export');
+      const errorMsg = 'App component is not defined - check your default export';
+      console.error('[MountVibeCode]', errorMsg, 'Available exports:', Object.keys(userVibeModule));
+      throw new Error(errorMsg);
     }
 
+    // Check container exists
+    console.log('[MountVibeCode] Looking for container...');
     const container = document.getElementById(containerId);
     if (!container) {
-      throw new Error('Container element not found: ' + containerId);
+      const errorMsg = `Container element not found: ${containerId}`;
+      console.error('[MountVibeCode]', errorMsg);
+      throw new Error(errorMsg);
     }
+    console.log('[MountVibeCode] Container found:', {
+      containerId,
+      containerSize: `${container.offsetWidth}x${container.offsetHeight}`,
+    });
 
-    // Step 4: Call the directly imported mountVibesApp with the user's component
+    // Step 5: Call the directly imported mountVibesApp with the user's component
+    console.log('[MountVibeCode] Calling mountVibesApp...');
     const mountResult = mountVibesApp({
       container: container,
       appComponent: AppComponent,
@@ -87,8 +139,13 @@ export async function mountVibeCode(
         installId: installId,
       },
     });
+    
+    console.log('[MountVibeCode] mountVibesApp completed', {
+      hasUnmount: typeof mountResult.unmount === 'function',
+    });
 
     // Dispatch success event with unmount callback
+    console.log('[MountVibeCode] Dispatching success event...');
     document.dispatchEvent(
       new CustomEvent('vibes-mount-ready', {
         detail: {
@@ -97,8 +154,22 @@ export async function mountVibeCode(
         },
       })
     );
+    
+    console.log('[MountVibeCode] Mount process completed successfully');
   } catch (err) {
-    console.error('Failed to mount vibe code:', err);
+    console.error('[MountVibeCode] Mount failed:', err);
+    
+    // Log additional debug info
+    if (typeof window !== 'undefined') {
+      console.log('[MountVibeCode] Environment info:', {
+        userAgent: navigator.userAgent,
+        location: window.location.href,
+        hasBabel: !!window.Babel,
+        hasCALLAI_API_KEY: !!window.CALLAI_API_KEY,
+        containerExists: !!document.getElementById(containerId),
+      });
+    }
+    
     // Dispatch error event for mount failures
     document.dispatchEvent(
       new CustomEvent('vibes-mount-error', {
@@ -112,6 +183,7 @@ export async function mountVibeCode(
   } finally {
     if (objectURL) {
       URL.revokeObjectURL(objectURL);
+      console.log('[MountVibeCode] Cleaned up blob URL');
     }
   }
 }

@@ -26,10 +26,10 @@ export default [
   route("about", "./routes/about.tsx", { id: "about" }),
   route("sso-callback", "./routes/sso-callback.tsx", { id: "sso-callback" }),
   route("remix/:vibeSlug?", "./routes/remix.tsx", { id: "remix" }),
-  route("vibe/:titleId/:installId", "./routes/vibe.$titleId.$installId.tsx", {
+  route("vibe/:titleId/:installId", "./routes/vibe-viewer.tsx", {
     id: "vibe-instance-viewer",
   }),
-  route("vibe/:titleId", "./routes/vibe.$titleId.tsx", {
+  route("vibe/:titleId", "./routes/vibe-instance-list.tsx", {
     id: "vibe-instances-list",
   }),
   route("firehose", "./routes/firehose.tsx", { id: "firehose" }),
@@ -38,5 +38,5 @@ export default [
   }),
   route("legal/tos", "./routes/legal/tos.tsx", { id: "terms-of-service" }),
   // 404 catch-all route - must be last
-  route("*", "./routes/$.tsx", { id: "not-found" }),
+  route("*", "./routes/catch-all.tsx", { id: "not-found" }),
 ] satisfies RouteConfig;

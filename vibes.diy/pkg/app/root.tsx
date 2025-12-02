@@ -11,7 +11,6 @@ import {
 
 import { PostHogProvider } from "posthog-js/react";
 import { VibesDiyEnv } from "./config/env.js";
-import type { Route } from "./+types/root";
 import "./app.css";
 import ClientOnly from "./components/ClientOnly.js";
 import CookieBanner from "./components/CookieBanner.js";
@@ -21,7 +20,7 @@ import { CookieConsentProvider } from "./contexts/CookieConsentContext.js";
 import { ThemeProvider } from "./contexts/ThemeContext.js";
 import { getLibraryImportMap } from "./config/import-map.js";
 
-export const links: Route.LinksFunction = () => {
+export const links = () => {
   const rawBase = VibesDiyEnv.APP_BASENAME();
   const base = rawBase.endsWith("/") ? rawBase : `${rawBase}/`;
 
@@ -115,28 +114,63 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         {/* Babel Standalone for JSX transformation in inline vibe rendering */}
         <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        {/* Babel availability check */}
+        <script>
+          {`
+            (function() {
+              function checkBabel() {
+                if (typeof Babel !== 'undefined') {
+                  console.log('[Root] Babel standalone loaded successfully');
+                  window.__BABEL_LOADED__ = true;
+                } else {
+                  console.error('[Root] Babel standalone failed to load');
+                  window.__BABEL_LOADED__ = false;
+                }
+              }
+              
+              // Check immediately
+              checkBabel();
+              
+              // Also check after a short delay to catch slow loads
+              setTimeout(checkBabel, 1000);
+            })();
+          `}
+        </script>
       </head>
       <body>
         {/* TODO: Re-enable GtmNoScript when consent can be checked server-side */}
         {/* <GtmNoScript /> */}
         <ClerkProvider publishableKey={VibesDiyEnv.CLERK_PUBLISHABLE_KEY()}>
           <ThemeProvider>
-            <PostHogProvider
-              apiKey={VibesDiyEnv.POSTHOG_KEY()}
-              options={{
-                api_host: VibesDiyEnv.POSTHOG_HOST(),
-                opt_out_capturing_by_default: true,
-              }}
-            >
-              <CookieConsentProvider>
-                {children}
-                <ClientOnly>
-                  <CookieBanner />
-                </ClientOnly>
-              </CookieConsentProvider>
-              <ScrollRestoration data-testid="scroll-restoration" />
-              <Scripts data-testid="scripts" />
-            </PostHogProvider>
+            {VibesDiyEnv.POSTHOG_KEY() ? (
+              <PostHogProvider
+                apiKey={VibesDiyEnv.POSTHOG_KEY()}
+                options={{
+                  api_host: VibesDiyEnv.POSTHOG_HOST(),
+                  opt_out_capturing_by_default: true,
+                }}
+              >
+                <CookieConsentProvider>
+                  {children}
+                  <ClientOnly>
+                    <CookieBanner />
+                  </ClientOnly>
+                </CookieConsentProvider>
+                <ScrollRestoration data-testid="scroll-restoration" />
+                <Scripts data-testid="scripts" />
+              </PostHogProvider>
+            ) : (
+              <>
+                <CookieConsentProvider>
+                  {children}
+                  <ClientOnly>
+                    <CookieBanner />
+                  </ClientOnly>
+                </CookieConsentProvider>
+                <ScrollRestoration data-testid="scroll-restoration" />
+                <Scripts data-testid="scripts" />
+              </>
+            )}
           </ThemeProvider>
         </ClerkProvider>
       </body>
@@ -148,7 +182,7 @@ export default function App() {
   return <Outlet />;
 }
 
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+export function ErrorBoundary({ error }: { error: unknown }) {
   let message = "Oops!";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;
